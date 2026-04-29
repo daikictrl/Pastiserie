@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { Icon } from '@iconify/react';
 import CountUp from 'react-countup';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,8 @@ export default function App() {
   const { t, i18n } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const [quoteName, setQuoteName] = useState('');
+  const [quoteOccasion, setQuoteOccasion] = useState('');
 
   const reviews = [
     { textKey: 'Review 1 Text', initials: 'SA', name: 'Sarah A.', typeKey: 'Birthday Order' },
@@ -29,6 +31,19 @@ export default function App() {
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language.startsWith('fr') ? 'en' : 'fr');
+  };
+
+  const handleQuoteSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const message = [
+      'Hi, I want to inquire about a custom cake order.',
+      `Name: ${quoteName.trim() || 'Not provided'}`,
+      `Occasion: ${quoteOccasion.trim() || 'Not provided'}`,
+      "(C'est un client qui vient du site)."
+    ].join('\n');
+
+    window.open(`https://wa.me/23799306723?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -319,10 +334,23 @@ export default function App() {
           <h2 className="font-playfair text-3xl sm:text-4xl tracking-tight font-medium text-white mb-6">{t('Custom Cake Orders')}</h2>
           <p className="text-sm text-[#A8A29A] font-light max-w-2xl mx-auto mb-10">{t('Custom Cake Desc')}</p>
           
-          <form action="https://wa.me/23799306723" method="get" target="_blank" className="max-w-3xl mx-auto bg-white/5 backdrop-blur-sm p-6 sm:p-8 rounded-3xl border border-white/10 flex flex-col sm:flex-row gap-4">
-            <input type="hidden" name="text" value="Hi, I want to inquire about a custom cake order (C'est un client qui vient du site)." />
-            <input type="text" placeholder={t('Your Name')} className="flex-1 bg-transparent border-b border-white/20 focus:border-[#D5ABB3] outline-none py-3 text-sm text-white placeholder:text-white/40 transition-colors" />
-            <input type="text" placeholder={t('Occasion (e.g., Wedding)')} className="flex-1 bg-transparent border-b border-white/20 focus:border-[#D5ABB3] outline-none py-3 text-sm text-white placeholder:text-white/40 transition-colors" />
+          <form onSubmit={handleQuoteSubmit} className="max-w-3xl mx-auto bg-white/5 backdrop-blur-sm p-6 sm:p-8 rounded-3xl border border-white/10 flex flex-col sm:flex-row gap-4">
+            <input
+              type="text"
+              name="name"
+              value={quoteName}
+              onChange={(event) => setQuoteName(event.target.value)}
+              placeholder={t('Your Name')}
+              className="flex-1 bg-transparent border-b border-white/20 focus:border-[#D5ABB3] outline-none py-3 text-sm text-white placeholder:text-white/40 transition-colors"
+            />
+            <input
+              type="text"
+              name="occasion"
+              value={quoteOccasion}
+              onChange={(event) => setQuoteOccasion(event.target.value)}
+              placeholder={t('Occasion (e.g., Wedding)')}
+              className="flex-1 bg-transparent border-b border-white/20 focus:border-[#D5ABB3] outline-none py-3 text-sm text-white placeholder:text-white/40 transition-colors"
+            />
             <button type="submit" className="inline-flex items-center justify-center gap-2 bg-[#D5ABB3] hover:bg-[#C99CA5] text-white text-sm font-medium px-8 py-3.5 rounded-xl transition-all duration-300 mt-4 sm:mt-0 flex-shrink-0">
               {t('Get a Quote')}
               <Icon icon="solar:arrow-right-linear" strokeWidth="1.5" />
@@ -514,4 +542,3 @@ export default function App() {
     </div>
   );
 }
-

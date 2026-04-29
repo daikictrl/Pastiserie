@@ -58,7 +58,7 @@ export default function App() {
               >
                 <Icon icon="solar:global-linear" className="text-2xl" strokeWidth="1.5" />
               </button>
-              <a href="https://wa.me/237651928589?text=Hi,%20I%20would%20like%20to%20know%20more%20about%20your%20cakes!%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="hidden sm:inline-flex items-center gap-2 bg-[#D5ABB3] hover:bg-[#C99CA5] text-white text-sm font-medium px-5 py-2.5 rounded-full transition-all duration-300 shadow-[0_4px_14px_0_rgba(213,171,179,0.39)] hover:shadow-[0_6px_20px_rgba(213,171,179,0.23)]">
+              <a href="https://wa.me/23799306723?text=Hi,%20I%20would%20like%20to%20know%20more%20about%20your%20cakes!%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="hidden sm:inline-flex items-center gap-2 bg-[#D5ABB3] hover:bg-[#C99CA5] text-white text-sm font-medium px-5 py-2.5 rounded-full transition-all duration-300 shadow-[0_4px_14px_0_rgba(213,171,179,0.39)] hover:shadow-[0_6px_20px_rgba(213,171,179,0.23)]">
                 <Icon icon="solar:phone-linear" strokeWidth="1.5" />
                 {t('Say Hello')}
               </a>
@@ -85,7 +85,7 @@ export default function App() {
           <a href="#menu" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-medium text-[#4A4238]">{t('Menu')}</a>
           <a href="#about" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-medium text-[#4A4238]">{t('About')}</a>
           <a href="#contact" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-medium text-[#4A4238]">{t('Contact')}</a>
-          <a href="https://wa.me/237651928589?text=Hi,%20I%20would%20like%20to%20know%20more%20about%20your%20cakes!%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 bg-[#D5ABB3] hover:bg-[#C99CA5] text-white text-base font-medium px-6 py-3 rounded-full transition-all duration-300 mt-4 mx-auto w-fit">
+          <a href="https://wa.me/23799306723?text=Hi,%20I%20would%20like%20to%20know%20more%20about%20your%20cakes!%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 bg-[#D5ABB3] hover:bg-[#C99CA5] text-white text-base font-medium px-6 py-3 rounded-full transition-all duration-300 mt-4 mx-auto w-fit">
             <Icon icon="solar:phone-linear" strokeWidth="1.5" />
             {t('Say Hello')}
           </a>
@@ -109,7 +109,7 @@ export default function App() {
                 {t('Hero Description')}
               </p>
               <div className="flex flex-wrap items-center gap-4">
-                <a href="https://wa.me/237651928589?text=Hi,%20I%20want%20to%20place%20an%20order!%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-[#2D2823] hover:bg-[#1A1714] text-white text-sm font-medium px-6 py-3.5 rounded-full transition-all duration-300">
+                <a href="https://wa.me/23799306723?text=Hi,%20I%20want%20to%20place%20an%20order!%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-[#2D2823] hover:bg-[#1A1714] text-white text-sm font-medium px-6 py-3.5 rounded-full transition-all duration-300">
                   <Icon icon="solar:cart-large-minimalistic-linear" className="text-lg" strokeWidth="1.5" />
                   {t('Order Now on WhatsApp')}
                 </a>
@@ -209,7 +209,7 @@ export default function App() {
                       <span className="w-1 h-1 rounded-full bg-[#D5ABB3]"></span>
                       <span>{t('Made to Order')}</span>
                     </div>
-                    <a href={`https://wa.me/237651928589?text=Hi,%20I%20want%20to%20order%20${encodeURIComponent(item.name)}%20(Le%20Client%20si%20vient%20du%20site)`} target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF8] hover:bg-[#FCF8F9] hover:text-[#D5ABB3] text-[#4A4238] py-2.5 rounded-xl text-sm font-medium transition-colors border border-[#F0EBE1] hover:border-[#E3C2C9]">
+                    <a href={`https://wa.me/23799306723?text=Hi,%20I%20want%20to%20order%20${encodeURIComponent(item.name)}%20(Le%20Client%20si%20vient%20du%20site)`} target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF8] hover:bg-[#FCF8F9] hover:text-[#D5ABB3] text-[#4A4238] py-2.5 rounded-xl text-sm font-medium transition-colors border border-[#F0EBE1] hover:border-[#E3C2C9]">
                       <Icon icon="solar:cart-plus-linear" strokeWidth="1.5" />
                       {t('Order on WhatsApp')}
                     </a>
@@ -239,7 +239,7 @@ export default function App() {
                     <span className="w-1 h-1 rounded-full bg-[#D5ABB3]"></span>
                     <span>{t('Made to Order')}</span>
                   </div>
-                  <a href="https://wa.me/237651928589?text=Hi,%20I%20want%20to%20order%20Chocolate%20Drip%20Cake%20with%20Fresh%20Fruit%20-%20Gosia%20Cake%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF8] hover:bg-[#FCF8F9] hover:text-[#D5ABB3] text-[#4A4238] py-2.5 rounded-xl text-sm font-medium transition-colors border border-[#F0EBE1] hover:border-[#E3C2C9]">
+                  <a href="https://wa.me/23799306723?text=Hi,%20I%20want%20to%20order%20Chocolate%20Drip%20Cake%20with%20Fresh%20Fruit%20-%20Gosia%20Cake%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF8] hover:bg-[#FCF8F9] hover:text-[#D5ABB3] text-[#4A4238] py-2.5 rounded-xl text-sm font-medium transition-colors border border-[#F0EBE1] hover:border-[#E3C2C9]">
                     <Icon icon="solar:cart-plus-linear" strokeWidth="1.5" />
                     {t('Order on WhatsApp')}
                   </a>
@@ -257,7 +257,7 @@ export default function App() {
                     <span className="w-1 h-1 rounded-full bg-[#D5ABB3]"></span>
                     <span>{t('Made to Order')}</span>
                   </div>
-                  <a href="https://wa.me/237651928589?text=Hi,%20I%20want%20to%20order%20Dark%20Forest%20Symphony%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF8] hover:bg-[#FCF8F9] hover:text-[#D5ABB3] text-[#4A4238] py-2.5 rounded-xl text-sm font-medium transition-colors border border-[#F0EBE1] hover:border-[#E3C2C9]">
+                  <a href="https://wa.me/23799306723?text=Hi,%20I%20want%20to%20order%20Dark%20Forest%20Symphony%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF8] hover:bg-[#FCF8F9] hover:text-[#D5ABB3] text-[#4A4238] py-2.5 rounded-xl text-sm font-medium transition-colors border border-[#F0EBE1] hover:border-[#E3C2C9]">
                     <Icon icon="solar:cart-plus-linear" strokeWidth="1.5" />
                     {t('Order on WhatsApp')}
                   </a>
@@ -275,7 +275,7 @@ export default function App() {
                     <span className="w-1 h-1 rounded-full bg-[#D5ABB3]"></span>
                     <span>{t('Made to Order')}</span>
                   </div>
-                  <a href="https://wa.me/237651928589?text=Hi,%20I%20want%20to%20order%20Caramel%20Macchiato%20(Le%20Client%20si%20vient%20du%20site)%20" target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF8] hover:bg-[#FCF8F9] hover:text-[#D5ABB3] text-[#4A4238] py-2.5 rounded-xl text-sm font-medium transition-colors border border-[#F0EBE1] hover:border-[#E3C2C9]">
+                  <a href="https://wa.me/23799306723?text=Hi,%20I%20want%20to%20order%20Caramel%20Macchiato%20(Le%20Client%20si%20vient%20du%20site)%20" target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF8] hover:bg-[#FCF8F9] hover:text-[#D5ABB3] text-[#4A4238] py-2.5 rounded-xl text-sm font-medium transition-colors border border-[#F0EBE1] hover:border-[#E3C2C9]">
                     <Icon icon="solar:cart-plus-linear" strokeWidth="1.5" />
                     {t('Order on WhatsApp')}
                   </a>
@@ -293,7 +293,7 @@ export default function App() {
                     <span className="w-1 h-1 rounded-full bg-[#D5ABB3]"></span>
                     <span>{t('Made to Order')}</span>
                   </div>
-                  <a href="https://wa.me/237651928589?text=Hi,%20I%20want%20to%20order%20Black%20%26%20Gold%20Luxe%20Birthday%20Cake%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF8] hover:bg-[#FCF8F9] hover:text-[#D5ABB3] text-[#4A4238] py-2.5 rounded-xl text-sm font-medium transition-colors border border-[#F0EBE1] hover:border-[#E3C2C9]">
+                  <a href="https://wa.me/23799306723?text=Hi,%20I%20want%20to%20order%20Black%20%26%20Gold%20Luxe%20Birthday%20Cake%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF8] hover:bg-[#FCF8F9] hover:text-[#D5ABB3] text-[#4A4238] py-2.5 rounded-xl text-sm font-medium transition-colors border border-[#F0EBE1] hover:border-[#E3C2C9]">
                     <Icon icon="solar:cart-plus-linear" strokeWidth="1.5" />
                     {t('Order on WhatsApp')}
                   </a>
@@ -319,7 +319,7 @@ export default function App() {
           <h2 className="font-playfair text-3xl sm:text-4xl tracking-tight font-medium text-white mb-6">{t('Custom Cake Orders')}</h2>
           <p className="text-sm text-[#A8A29A] font-light max-w-2xl mx-auto mb-10">{t('Custom Cake Desc')}</p>
           
-          <form action="https://wa.me/237651928589" method="get" target="_blank" className="max-w-3xl mx-auto bg-white/5 backdrop-blur-sm p-6 sm:p-8 rounded-3xl border border-white/10 flex flex-col sm:flex-row gap-4">
+          <form action="https://wa.me/23799306723" method="get" target="_blank" className="max-w-3xl mx-auto bg-white/5 backdrop-blur-sm p-6 sm:p-8 rounded-3xl border border-white/10 flex flex-col sm:flex-row gap-4">
             <input type="hidden" name="text" value="Hi, I want to inquire about a custom cake order (C'est un client qui vient du site)." />
             <input type="text" placeholder={t('Your Name')} className="flex-1 bg-transparent border-b border-white/20 focus:border-[#D5ABB3] outline-none py-3 text-sm text-white placeholder:text-white/40 transition-colors" />
             <input type="text" placeholder={t('Occasion (e.g., Wedding)')} className="flex-1 bg-transparent border-b border-white/20 focus:border-[#D5ABB3] outline-none py-3 text-sm text-white placeholder:text-white/40 transition-colors" />
@@ -464,7 +464,7 @@ export default function App() {
                 <span className="font-playfair text-xl font-medium tracking-tighter text-[#2D2823]">SWEETMEATS</span>
               </div>
               <p className="text-sm text-[#8B847A] font-light mb-8 max-w-sm">{t('Footer Description')}</p>
-              <a href="https://wa.me/237651928589?text=Hi,%20I%20have%20an%20inquiry%20(Le%20Client%20si%20vient%20du%20site)." target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-[#2D2823] hover:bg-[#1A1714] text-white text-sm font-medium px-6 py-3 rounded-xl transition-all duration-300 w-fit">
+              <a href="https://wa.me/23799306723?text=Hi,%20I%20have%20an%20inquiry%20(Le%20Client%20si%20vient%20du%20site)." target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-[#2D2823] hover:bg-[#1A1714] text-white text-sm font-medium px-6 py-3 rounded-xl transition-all duration-300 w-fit">
                 <Icon icon="solar:letter-linear" strokeWidth="1.5" />
                 {t('Contact via WhatsApp')}
               </a>
@@ -487,7 +487,7 @@ export default function App() {
                 </li>
                 <li className="flex items-center gap-3">
                   <Icon icon="solar:phone-linear" className="text-[#D5ABB3] text-lg" strokeWidth="1.5" />
-                  <span className="text-sm text-[#8B847A] font-light">+237 6 51 92 85 89</span>
+                  <span className="text-sm text-[#8B847A] font-light">+237 99 30 67 23</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Icon icon="solar:clock-circle-linear" className="text-[#D5ABB3] text-lg" strokeWidth="1.5" />
@@ -507,7 +507,7 @@ export default function App() {
       </footer>
 
       {/* Floating WhatsApp Button */}
-      <a href="https://wa.me/237651928589?text=Hi,%20I%20want%20to%20order%20a%20cake!%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_8px_30px_rgba(37,211,102,0.4)] hover:scale-110 transition-transform duration-300 group">
+      <a href="https://wa.me/23799306723?text=Hi,%20I%20want%20to%20order%20a%20cake!%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_8px_30px_rgba(37,211,102,0.4)] hover:scale-110 transition-transform duration-300 group">
         <span className="absolute inset-0 rounded-full bg-[#25D366] animate-ping opacity-20"></span>
         <svg className="w-8 h-8 relative z-10" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-5.824 4.74-10.563 10.564-10.563 5.826 0 10.564 4.74 10.564 10.564 0 5.827-4.739 10.565-10.564 10.565z"></path></svg>
       </a>

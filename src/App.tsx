@@ -44,19 +44,19 @@ export default function App() {
       quote: t('Review 1 Text'),
       name: "Sarah A.",
       designation: i18n.language.startsWith('fr') ? "Gâteau d'Anniversaire — Douala" : "Birthday Cake Order",
-      src: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop",
+      src: "/testimonials/WhatsApp Image 2026-11-25 at 3.57.38 PM.jpeg",
     },
     {
       quote: t('Review 2 Text'),
       name: "Rohan K.",
       designation: i18n.language.startsWith('fr') ? "Plateau Traiteur Événement — Yaoundé" : "Catering Cocktail Platter",
-      src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
+      src: "/testimonials/WhatsApp Image 2026-11-25 at 4.08.40 PM.jpeg",
     },
     {
       quote: t('Review 3 Text'),
       name: "Priya M.",
       designation: i18n.language.startsWith('fr') ? "Cliente Régulière — Douala" : "Regular Customer",
-      src: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop",
+      src: "/testimonials/WhatsApp Image 2026-11-25 at 4.16.51 PM.jpeg",
     },
     {
       quote: i18n.language.startsWith('fr')
@@ -64,7 +64,7 @@ export default function App() {
         : "For our wedding, the tiered centerpiece cake was majestic and our guests were in awe. The praline and vanilla were sheer perfection.",
       name: "Marcelle & Steve",
       designation: i18n.language.startsWith('fr') ? "Gâteau de Mariage & Cérémonie" : "Wedding Tiered Cake",
-      src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
+      src: "/testimonials/WhatsApp Image 2026-11-25 at 4.16.52 PM (1).jpeg",
     },
     {
       quote: i18n.language.startsWith('fr')
@@ -72,7 +72,7 @@ export default function App() {
         : "The homemade crispy spring rolls and golden samosas are simply the best in town. Always hot, crispy, and delivered on time.",
       name: "Jean-Paul N.",
       designation: i18n.language.startsWith('fr') ? "Cocktail d'Entreprise" : "Corporate Cocktail Event",
-      src: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop",
+      src: "/testimonials/WhatsApp Image 2026-11-25 at 4.16.52 PM.jpeg",
     }
   ], [t, i18n.language]);
 

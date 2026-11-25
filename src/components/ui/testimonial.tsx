@@ -16,35 +16,35 @@ export const defaultTestimonials: Testimonial[] = [
       "Le gâteau d'anniversaire commandé pour ma fille était magnifique et tellement moelleux ! Tout le monde a demandé le contact. Bravo Sweetmeats !",
     name: "Sarah A.",
     designation: "Gâteau d'Anniversaire — Douala",
-    src: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop",
+    src: "/testimonials/WhatsApp Image 2026-11-25 at 3.57.38 PM.jpeg",
   },
   {
     quote:
       "Le plateau cocktail salé avec les mini burgers et brochettes de plantain a fait l'unanimité lors de notre réception. Produits très frais et bien assaisonnés !",
     name: "Rohan K.",
     designation: "Plateau Traiteur Événement — Yaoundé",
-    src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
+    src: "/testimonials/WhatsApp Image 2026-11-25 at 4.08.40 PM.jpeg",
   },
   {
     quote:
       "Commande ultra simple sur WhatsApp, respect scrupuleux du modèle choisi et livraison ponctuelle. Vous avez gagné des clients fidèles pour tous nos événements.",
     name: "Priya M.",
     designation: "Cliente Régulière — Douala",
-    src: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop",
+    src: "/testimonials/WhatsApp Image 2026-11-25 at 4.16.51 PM.jpeg",
   },
   {
     quote:
       "Pour notre mariage, le gâteau à étages était grandiose et la pièce montée a émerveillé tous nos invités. Les saveurs praliné et vanille étaient divines.",
     name: "Marcelle & Steve",
     designation: "Gâteau de Mariage — Douala",
-    src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
+    src: "/testimonials/WhatsApp Image 2026-11-25 at 4.16.52 PM (1).jpeg",
   },
   {
     quote:
       "Les nems faits maison et les samoussas dorés sont les meilleurs de la ville. Toujours croustillants, chauds et livrés avec le sourire.",
     name: "Jean-Paul N.",
     designation: "Cocktail d'Entreprise — Yaoundé",
-    src: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop",
+    src: "/testimonials/WhatsApp Image 2026-11-25 at 4.16.52 PM.jpeg",
   },
 ];
 

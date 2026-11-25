@@ -3,151 +3,448 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, useMemo, type FormEvent } from 'react';
 import { Icon } from '@iconify/react';
 import CountUp from 'react-countup';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
+import { CAKE_TIERS, SWEET_PASTRIES, SAVORY_CATERING, type CakeTier, type ProductItem } from './data/products';
+import { AnimatedTestimonials } from './components/ui/testimonial';
 
 export default function App() {
   const { t, i18n } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const [selectedTierFilter, setSelectedTierFilter] = useState<string>('all');
+  
+  // Gallery Modal state (to browse all 30-80+ images of a tier)
+  const [activeModalTier, setActiveModalTier] = useState<CakeTier | null>(null);
+  
+  // Lightbox Preview state (single image full-view)
+  const [activeLightbox, setActiveLightbox] = useState<{
+    tierTitle: string;
+    tierPrice: string;
+    tierId: string;
+    image: string;
+    index: number;
+    total: number;
+    allImages?: string[];
+  } | null>(null);
+
+  // Custom Quote Form state
   const [quoteName, setQuoteName] = useState('');
   const [quoteOccasion, setQuoteOccasion] = useState('');
+  const [quoteDate, setQuoteDate] = useState('');
+  const [quoteGuests, setQuoteGuests] = useState('');
+  const [quoteBudget, setQuoteBudget] = useState('15 000 - 25 000 FCFA');
+  const [quoteFlavor, setQuoteFlavor] = useState('');
 
-  const reviews = [
-    { textKey: 'Review 1 Text', initials: 'SA', name: 'Sarah A.', typeKey: 'Birthday Order' },
-    { textKey: 'Review 2 Text', initials: 'RK', name: 'Rohan K.', typeKey: 'Custom Order' },
-    { textKey: 'Review 3 Text', initials: 'MP', name: 'Priya M.', typeKey: 'Regular Customer' }
-  ];
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentReviewIndex((prev) => (prev + 1) % reviews.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
+  // Testimonials Data for 3D Animated Showcase
+  const testimonialsData = useMemo(() => [
+    {
+      quote: t('Review 1 Text'),
+      name: "Sarah A.",
+      designation: i18n.language.startsWith('fr') ? "Gâteau d'Anniversaire — Douala" : "Birthday Cake Order",
+      src: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop",
+    },
+    {
+      quote: t('Review 2 Text'),
+      name: "Rohan K.",
+      designation: i18n.language.startsWith('fr') ? "Plateau Traiteur Événement — Yaoundé" : "Catering Cocktail Platter",
+      src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
+    },
+    {
+      quote: t('Review 3 Text'),
+      name: "Priya M.",
+      designation: i18n.language.startsWith('fr') ? "Cliente Régulière — Douala" : "Regular Customer",
+      src: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop",
+    },
+    {
+      quote: i18n.language.startsWith('fr')
+        ? "Pour notre mariage, le gâteau à étages était grandiose et la pièce montée a émerveillé tous nos invités. Les saveurs praliné et vanille étaient divines."
+        : "For our wedding, the tiered centerpiece cake was majestic and our guests were in awe. The praline and vanilla were sheer perfection.",
+      name: "Marcelle & Steve",
+      designation: i18n.language.startsWith('fr') ? "Gâteau de Mariage & Cérémonie" : "Wedding Tiered Cake",
+      src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
+    },
+    {
+      quote: i18n.language.startsWith('fr')
+        ? "Les nems faits maison et les samoussas dorés sont les meilleurs de la ville. Toujours croustillants, chauds et livrés avec le sourire."
+        : "The homemade crispy spring rolls and golden samosas are simply the best in town. Always hot, crispy, and delivered on time.",
+      name: "Jean-Paul N.",
+      designation: i18n.language.startsWith('fr') ? "Cocktail d'Entreprise" : "Corporate Cocktail Event",
+      src: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop",
+    }
+  ], [t, i18n.language]);
 
   const toggleLanguage = () => {
-    i18n.changeLanguage(i18n.language.startsWith('fr') ? 'en' : 'fr');
+    const nextLang = i18n.language.startsWith('fr') ? 'en' : 'fr';
+    i18n.changeLanguage(nextLang);
   };
 
-  const handleQuoteSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const WHATSAPP_PHONE = '23799306723';
 
-    const message = [
-      'Hi, I want to inquire about a custom cake order.',
-      `Name: ${quoteName.trim() || 'Not provided'}`,
-      `Occasion: ${quoteOccasion.trim() || 'Not provided'}`,
-      "(C'est un client qui vient du site)."
+  // Helper for generating order link for a specific cake
+  const getCakeOrderLink = (tier: CakeTier, index: number) => {
+    const modelRef = `${tier.id.toUpperCase()}-${String(index + 1).padStart(2, '0')}`;
+    const msg = [
+      `Bonjour Sweetmeats ! 👋`,
+      `Je viens de votre site web et je souhaite commander ce gâteau :`,
+      `• Gamme : ${tier.priceFormatted}`,
+      `• Modèle : Réf #${modelRef}`,
+      `Pouvez-vous me confirmer les disponibilités et modalités de commande ? Merci !`
     ].join('\n');
+    return `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(msg)}`;
+  };
 
-    window.open(`https://wa.me/23799306723?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+  // Helper for generating order link for a pastry or savory item
+  const getProductOrderLink = (item: ProductItem) => {
+    const title = t(item.titleKey);
+    const msg = [
+      `Bonjour Sweetmeats ! 👋`,
+      `Je viens de votre site web et je souhaite commander :`,
+      `• Article : ${title}`,
+      item.priceFormatted ? `• Format / Prix : ${item.priceFormatted}` : '',
+      `Pouvez-vous me communiquer les détails de commande et délais de livraison ? Merci !`
+    ].filter(Boolean).join('\n');
+    return `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(msg)}`;
+  };
+
+  // Helper for custom quote submit
+  const handleCustomQuoteSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const msg = [
+      `Bonjour Sweetmeats ! 👋`,
+      `Je souhaite demander un devis personnalisé :`,
+      `• Nom : ${quoteName.trim() || 'Non renseigné'}`,
+      `• Événement : ${quoteOccasion.trim() || 'Non renseigné'}`,
+      quoteDate ? `• Date prévue : ${quoteDate}` : '',
+      quoteGuests ? `• Nombre d'invités / parts : ${quoteGuests}` : '',
+      quoteBudget ? `• Budget approximatif : ${quoteBudget}` : '',
+      quoteFlavor ? `• Thème ou Saveurs : ${quoteFlavor}` : '',
+      `Pouvez-vous me recontacter avec une proposition ? Merci !`
+    ].filter(Boolean).join('\n');
+
+    window.open(`https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
+  };
+
+  // Filtered tiers based on selection
+  const displayedTiers = useMemo(() => {
+    if (selectedTierFilter === 'all') return CAKE_TIERS;
+    return CAKE_TIERS.filter((t) => t.id === selectedTierFilter);
+  }, [selectedTierFilter]);
+
+  // Handle lightbox navigation
+  const handleLightboxNav = (direction: 'prev' | 'next') => {
+    if (!activeLightbox || !activeLightbox.allImages) return;
+    const count = activeLightbox.allImages.length;
+    let nextIndex = direction === 'next' ? activeLightbox.index + 1 : activeLightbox.index - 1;
+    if (nextIndex < 0) nextIndex = count - 1;
+    if (nextIndex >= count) nextIndex = 0;
+
+    setActiveLightbox({
+      ...activeLightbox,
+      index: nextIndex,
+      image: activeLightbox.allImages[nextIndex]
+    });
   };
 
   return (
-    <div className="bg-[#FAFAF8] text-[#4A4238] font-poppins antialiased selection:bg-[#E3C2C9] selection:text-white relative min-h-screen">
-      {/* Navigation */}
-      <nav className="fixed w-full z-50 top-0 transition-all duration-300 backdrop-blur-md bg-[#FAFAF8]/80 border-b border-[#F0EBE1]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex-shrink-0 flex items-center gap-3">
-              <img src="/Logo.jpeg" alt="Sweetmeats Logo" className="h-10 w-auto object-contain mix-blend-multiply rounded-md" />
-              <a href="#" className="font-playfair text-xl font-medium tracking-tighter text-[#4A4238]">
-                SWEETMEATS
-              </a>
+    <div className="bg-[#FAF7F2] text-[#2D241E] font-poppins antialiased selection:bg-[#E2B1B1] selection:text-white relative min-h-screen">
+      {/* Sticky Header with Scrolling Announcement Banner & Navigation */}
+      <header className="sticky top-0 z-40 shadow-xs">
+        {/* Scrolling Text Banner Above Navigation */}
+        <div className="bg-[#261E18] text-[#F3E8DF] py-2 border-b border-[#3D322A] overflow-hidden select-none">
+          <div className="animate-marquee flex items-center whitespace-nowrap gap-8 text-xs font-light tracking-wide">
+            {/* Set 1 */}
+            <div className="flex items-center gap-8 shrink-0">
+              <span className="flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="font-medium text-white">{t('Delivery Available')}</span>
+              </span>
+              <span className="text-[#B38743]">•</span>
+              <span className="text-[#E8D5C4]">{t('Budget Friendly Desc')}</span>
+              <span className="text-[#B38743]">•</span>
+              <span className="text-stone-300">🎂 Gâteaux d'anniversaire & cérémonies sur commande</span>
+              <span className="text-[#B38743]">•</span>
+              <span className="text-amber-200">✨ Service traiteur apéritif salé & sucré</span>
+              <span className="text-[#B38743]">•</span>
+              <span className="text-stone-300">💬 Commandes rapides au +237 99 30 67 23</span>
+              <span className="text-[#B38743]">•</span>
             </div>
-            <div className="hidden md:flex space-x-8">
-              <a href="#" className="text-sm font-medium text-[#8B847A] hover:text-[#D5ABB3] transition-colors">{t('Home')}</a>
-              <a href="#menu" className="text-sm font-medium text-[#8B847A] hover:text-[#D5ABB3] transition-colors">{t('Menu')}</a>
-              <a href="#about" className="text-sm font-medium text-[#8B847A] hover:text-[#D5ABB3] transition-colors">{t('About')}</a>
-              <a href="#contact" className="text-sm font-medium text-[#8B847A] hover:text-[#D5ABB3] transition-colors">{t('Contact')}</a>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-4">
-              <button 
-                onClick={toggleLanguage} 
-                className="inline-flex items-center justify-center w-10 h-10 bg-transparent hover:bg-[#F0EBE1] text-[#4A4238] rounded-full transition-all duration-300"
-                aria-label="Toggle Language"
-                title={t('Language')}
-              >
-                <Icon icon="solar:global-linear" className="text-2xl" strokeWidth="1.5" />
-              </button>
-              <a href="https://wa.me/23799306723?text=Hi,%20I%20would%20like%20to%20know%20more%20about%20your%20cakes!%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="hidden sm:inline-flex items-center gap-2 bg-[#D5ABB3] hover:bg-[#C99CA5] text-white text-sm font-medium px-5 py-2.5 rounded-full transition-all duration-300 shadow-[0_4px_14px_0_rgba(213,171,179,0.39)] hover:shadow-[0_6px_20px_rgba(213,171,179,0.23)]">
-                <Icon icon="solar:phone-linear" strokeWidth="1.5" />
-                {t('Say Hello')}
-              </a>
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden inline-flex items-center justify-center w-10 h-10 text-[#4A4238] hover:bg-[#F0EBE1] rounded-full transition-colors"
-                aria-label="Toggle Menu"
-              >
-                <Icon icon={isMobileMenuOpen ? "solar:close-circle-linear" : "solar:hamburger-menu-linear"} className="text-2xl" strokeWidth="1.5" />
-              </button>
+
+            {/* Set 2 (Duplicate for seamless continuous loop) */}
+            <div className="flex items-center gap-8 shrink-0" aria-hidden="true">
+              <span className="flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="font-medium text-white">{t('Delivery Available')}</span>
+              </span>
+              <span className="text-[#B38743]">•</span>
+              <span className="text-[#E8D5C4]">{t('Budget Friendly Desc')}</span>
+              <span className="text-[#B38743]">•</span>
+              <span className="text-stone-300">🎂 Gâteaux d'anniversaire & cérémonies sur commande</span>
+              <span className="text-[#B38743]">•</span>
+              <span className="text-amber-200">✨ Service traiteur apéritif salé & sucré</span>
+              <span className="text-[#B38743]">•</span>
+              <span className="text-stone-300">💬 Commandes rapides au +237 99 30 67 23</span>
+              <span className="text-[#B38743]">•</span>
             </div>
           </div>
         </div>
-      </nav>
 
-      {/* Mobile Menu */}
-      <div 
-        className={`fixed inset-0 z-40 bg-[#FAFAF8] pt-24 px-6 md:hidden transition-transform duration-300 ease-in-out ${
-          isMobileMenuOpen ? 'translate-y-0' : '-translate-y-full'
-        }`}
-      >
-        <div className="flex flex-col space-y-6 text-center">
-          <a href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-medium text-[#4A4238]">{t('Home')}</a>
-          <a href="#menu" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-medium text-[#4A4238]">{t('Menu')}</a>
-          <a href="#about" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-medium text-[#4A4238]">{t('About')}</a>
-          <a href="#contact" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-medium text-[#4A4238]">{t('Contact')}</a>
-          <a href="https://wa.me/23799306723?text=Hi,%20I%20would%20like%20to%20know%20more%20about%20your%20cakes!%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 bg-[#D5ABB3] hover:bg-[#C99CA5] text-white text-base font-medium px-6 py-3 rounded-full transition-all duration-300 mt-4 mx-auto w-fit">
-            <Icon icon="solar:phone-linear" strokeWidth="1.5" />
-            {t('Say Hello')}
-          </a>
-        </div>
-      </div>
+        {/* Navigation */}
+        <nav className="backdrop-blur-md bg-[#FAF7F2]/95 border-b border-[#EFE7DE] transition-all">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-20">
+              {/* Brand Logo & Name */}
+              <a href="#" className="flex items-center gap-3 group">
+                <img
+                  src="/Logo.jpeg"
+                  alt="Sweetmeats Logo"
+                  className="h-11 w-11 object-cover rounded-full border border-[#D9C8B5] shadow-xs group-hover:scale-105 transition-transform"
+                />
+                <div>
+                  <span className="font-playfair text-xl sm:text-2xl font-bold tracking-tight text-[#261E18] block leading-none">
+                    SWEETMEATS
+                  </span>
+                  <span className="text-[10px] uppercase tracking-widest text-[#B38743] font-medium block mt-1">
+                    Pâtisserie Fine & Traiteur
+                  </span>
+                </div>
+              </a>
+
+              {/* Desktop Navigation Links */}
+              <div className="hidden lg:flex items-center space-x-7">
+                <a href="#cakes" className="text-sm font-medium text-[#6B5E52] hover:text-[#B38743] transition-colors">
+                  {t('Cakes')}
+                </a>
+                <a href="#pastries" className="text-sm font-medium text-[#6B5E52] hover:text-[#B38743] transition-colors">
+                  {t('Pastries')}
+                </a>
+                <a href="#savory" className="text-sm font-medium text-[#6B5E52] hover:text-[#B38743] transition-colors">
+                  {t('Savory')}
+                </a>
+                <a href="#custom" className="text-sm font-medium text-[#6B5E52] hover:text-[#B38743] transition-colors">
+                  {t('CustomOrders')}
+                </a>
+                <a href="#about" className="text-sm font-medium text-[#6B5E52] hover:text-[#B38743] transition-colors">
+                  {t('About')}
+                </a>
+              </div>
+
+              {/* Language Toggle & Actions */}
+              <div className="flex items-center gap-2 sm:gap-4">
+                <button
+                  onClick={toggleLanguage}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#E6DDD2] text-[#4A3E34] text-xs font-medium hover:border-[#B38743] hover:text-[#B38743] transition-all shadow-xs"
+                  aria-label="Toggle Language"
+                  title="Changer de langue / Change language"
+                >
+                  <Icon icon="solar:global-linear" className="text-base text-[#B38743]" />
+                  <span className="uppercase font-semibold">{i18n.language.startsWith('fr') ? 'FR' : 'EN'}</span>
+                </button>
+
+                <a
+                  href={`https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent('Bonjour Sweetmeats, je viens de votre site et je souhaite passer une commande !')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hidden sm:inline-flex items-center gap-2 bg-[#261E18] hover:bg-[#3D3228] text-white text-xs sm:text-sm font-medium px-5 py-2.5 rounded-full transition-all shadow-md hover:shadow-lg active:scale-95"
+                >
+                  <Icon icon="solar:chat-round-dots-linear" className="text-base text-emerald-400" />
+                  <span>WhatsApp</span>
+                </a>
+
+                {/* Mobile menu toggle */}
+                <button
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="lg:hidden inline-flex items-center justify-center w-10 h-10 text-[#261E18] hover:bg-white rounded-full border border-[#E6DDD2] transition-colors"
+                  aria-label="Toggle Menu"
+                >
+                  <Icon icon={isMobileMenuOpen ? 'solar:close-circle-linear' : 'solar:hamburger-menu-linear'} className="text-2xl" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      {/* Mobile Drawer Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="lg:hidden bg-[#FAF7F2] border-b border-[#E6DDD2] px-6 py-6 overflow-hidden z-30"
+          >
+            <div className="flex flex-col space-y-4 text-center">
+              <a
+                href="#cakes"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-base font-medium text-[#261E18] py-2 hover:text-[#B38743]"
+              >
+                {t('Cakes')}
+              </a>
+              <a
+                href="#pastries"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-base font-medium text-[#261E18] py-2 hover:text-[#B38743]"
+              >
+                {t('Pastries')}
+              </a>
+              <a
+                href="#savory"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-base font-medium text-[#261E18] py-2 hover:text-[#B38743]"
+              >
+                {t('Savory')}
+              </a>
+              <a
+                href="#custom"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-base font-medium text-[#261E18] py-2 hover:text-[#B38743]"
+              >
+                {t('CustomOrders')}
+              </a>
+              <a
+                href="#about"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-base font-medium text-[#261E18] py-2 hover:text-[#B38743]"
+              >
+                {t('About')}
+              </a>
+              <a
+                href={`https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent('Bonjour Sweetmeats, je souhaite passer une commande !')}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2 bg-[#261E18] text-white py-3 rounded-full text-sm font-medium mt-3"
+              >
+                <Icon icon="solar:chat-round-dots-linear" className="text-emerald-400 text-lg" />
+                <span>Commander sur WhatsApp</span>
+              </a>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+      <section className="relative pt-12 pb-20 lg:pt-20 lg:pb-32 overflow-hidden bg-gradient-to-b from-[#FAF7F2] via-[#F5EFE6] to-[#FAF7F2]">
+        {/* Subtle decorative glow */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#E8D4BA]/25 rounded-full blur-3xl pointer-events-none"></div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 text-xs font-medium mb-8">
-                <Icon icon="solar:clock-circle-linear" strokeWidth="1.5" />
-                {t('Delivery Available')}
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            {/* Left Content */}
+            <div className="lg:col-span-7 max-w-2xl text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EFE4D6] border border-[#DFCBB5] text-[#7A5B2F] text-xs font-medium mb-6">
+                <Icon icon="solar:cupcake-linear" className="text-sm" />
+                <span>Pâtisserie Fine & Traiteur Salé</span>
               </div>
-              <h1 className="font-playfair text-5xl sm:text-6xl lg:text-7xl font-medium tracking-tight text-[#2D2823] leading-[1.1] mb-6">
-                {t('Delicious Cakes')} <br />
-                <span className="text-[#C6A664] italic font-normal">{t('Made With Love')}</span>
+
+              <h1 className="font-playfair text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#261E18] leading-[1.15] mb-6">
+                {t('Delicious Cakes')}{' '}
+                <span className="text-[#B38743] italic font-normal block sm:inline">
+                  {t('Made With Love')}
+                </span>
               </h1>
-              <p className="text-lg text-[#8B847A] mb-10 max-w-lg font-light leading-relaxed">
+
+              <p className="text-base sm:text-lg text-[#6B5E52] mb-8 font-light leading-relaxed">
                 {t('Hero Description')}
               </p>
-              <div className="flex flex-wrap items-center gap-4">
-                <a href="https://wa.me/23799306723?text=Hi,%20I%20want%20to%20place%20an%20order!%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-[#2D2823] hover:bg-[#1A1714] text-white text-sm font-medium px-6 py-3.5 rounded-full transition-all duration-300">
-                  <Icon icon="solar:cart-large-minimalistic-linear" className="text-lg" strokeWidth="1.5" />
-                  {t('Order Now on WhatsApp')}
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
+                <a
+                  href="#cakes"
+                  className="inline-flex items-center gap-2 bg-[#B38743] hover:bg-[#9B7336] text-white text-sm font-medium px-7 py-4 rounded-full transition-all shadow-md hover:shadow-lg active:scale-95"
+                >
+                  <Icon icon="solar:gift-linear" className="text-lg" />
+                  <span>{t('Explore Menu')}</span>
                 </a>
-                <a href="#menu" className="inline-flex items-center gap-2 bg-transparent hover:bg-[#F0EBE1] text-[#4A4238] border border-[#E5E0D8] text-sm font-medium px-6 py-3.5 rounded-full transition-all duration-300">
-                  {t('Explore Menu')}
+                <a
+                  href="#savory"
+                  className="inline-flex items-center gap-2 bg-white hover:bg-[#F3EAE0] text-[#261E18] border border-[#DDD0C2] text-sm font-medium px-6 py-4 rounded-full transition-all shadow-xs"
+                >
+                  <Icon icon="solar:chef-hat-heart-linear" className="text-lg text-[#B38743]" />
+                  <span>{t('Savory')}</span>
                 </a>
               </div>
-            </div>
-            <div className="relative lg:ml-auto w-full max-w-lg">
-              {/* Decorative background blur */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-[#E3C2C9]/30 to-[#C6A664]/20 blur-3xl rounded-full transform -translate-x-10 translate-y-10"></div>
-              <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden border border-white/50 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)]">
-                <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Elegant tiered cake" className="object-cover w-full h-full" />
-              </div>
-              
-              {/* Floating Badge */}
-              <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-[#F0EBE1] flex items-center gap-4 animate-bounce" style={{ animationDuration: '3s' }}>
-                <div className="w-12 h-12 rounded-full bg-[#FCF8F9] flex items-center justify-center text-[#D5ABB3]">
-                  <Icon icon="solar:star-fall-minimalistic-linear" className="text-2xl" strokeWidth="1.5" />
+
+              {/* Highlights pills */}
+              <div className="mt-10 pt-8 border-t border-[#E8DDCE] grid grid-cols-3 gap-4 text-center lg:text-left">
+                <div>
+                  <p className="font-playfair text-2xl font-bold text-[#261E18]">
+                    <CountUp end={250} duration={2} enableScrollSpy scrollSpyOnce />+
+                  </p>
+                  <p className="text-xs text-[#7A6D60] uppercase tracking-wider font-medium mt-1">
+                    Modèles Disponibles
+                  </p>
                 </div>
                 <div>
-                  <p className="text-xs text-[#8B847A] font-medium uppercase tracking-wider">{t('Rated')}</p>
-                  <p className="text-sm font-medium text-[#2D2823]"><CountUp end={4.9} decimals={1} duration={2.5} enableScrollSpy scrollSpyOnce />/5 {t('by Customers')}</p>
+                  <p className="font-playfair text-2xl font-bold text-[#B38743]">5 Gammes</p>
+                  <p className="text-xs text-[#7A6D60] uppercase tracking-wider font-medium mt-1">
+                    Dès 10 000 FCFA
+                  </p>
+                </div>
+                <div>
+                  <p className="font-playfair text-2xl font-bold text-[#261E18]">100%</p>
+                  <p className="text-xs text-[#7A6D60] uppercase tracking-wider font-medium mt-1">
+                    Fait Maison & Frais
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Visual Collage */}
+            <div className="lg:col-span-5 relative">
+              <div className="relative mx-auto max-w-sm sm:max-w-md">
+                {/* Main Featured Cake Card */}
+                <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-[#EFE8DF] relative group">
+                  <img
+                    src={CAKE_TIERS[2]?.images[0] || '/cakes/15k/WhatsApp Image 2026-05-07 at 1.48.51 PM.jpeg'}
+                    alt="Signature Celebration Cake"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex flex-col justify-end p-6 text-white">
+                    <span className="inline-block bg-[#B38743] text-white text-xs font-semibold px-3 py-1 rounded-full w-fit mb-2">
+                      Gamme Signature
+                    </span>
+                    <h3 className="font-playfair text-2xl font-medium">15 000 FCFA</h3>
+                    <p className="text-xs text-stone-200 mt-1">Drip Cake & décors personnalisés</p>
+                  </div>
+                </div>
+
+                {/* Floating Sweet Pastry Badge */}
+                <div className="absolute -top-6 -left-6 bg-white p-3.5 rounded-2xl shadow-xl border border-[#EBE1D5] flex items-center gap-3 animate-pulse">
+                  <img
+                    src="/Bouquet de cupcake.jpeg"
+                    alt="Cupcake floral"
+                    className="w-12 h-12 rounded-xl object-cover"
+                  />
+                  <div>
+                    <span className="text-[10px] uppercase font-semibold text-[#B38743] block">
+                      Spécialité
+                    </span>
+                    <span className="text-xs font-medium text-[#261E18] block">
+                      Bouquet de Cupcakes
+                    </span>
+                  </div>
+                </div>
+
+                {/* Floating Savory Platter Badge */}
+                <div className="absolute -bottom-6 -right-6 bg-white p-3.5 rounded-2xl shadow-xl border border-[#EBE1D5] flex items-center gap-3">
+                  <img
+                    src="/Mini Burger, Sandwich, Babouts, quiche.jpeg"
+                    alt="Plateau cocktail"
+                    className="w-12 h-12 rounded-xl object-cover"
+                  />
+                  <div>
+                    <span className="text-[10px] uppercase font-semibold text-emerald-600 block">
+                      Traiteur Cocktail
+                    </span>
+                    <span className="text-xs font-medium text-[#261E18] block">
+                      Mini Burgers & Salés
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -155,390 +452,926 @@ export default function App() {
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="py-20 bg-white border-y border-[#F0EBE1]">
+      {/* Value Pillars */}
+      <section className="py-16 bg-white border-y border-[#EFE7DE]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="flex flex-col items-center text-center p-6 rounded-3xl hover:bg-[#FAFAF8] transition-colors duration-300">
-              <div className="w-14 h-14 rounded-full bg-[#FCF8F9] text-[#D5ABB3] flex items-center justify-center mb-6">
-                <Icon icon="solar:leaf-linear" className="text-3xl" strokeWidth="1.5" />
+            <div className="flex items-start gap-4 p-4 rounded-2xl">
+              <div className="w-12 h-12 rounded-2xl bg-[#F6EDE2] text-[#B38743] flex items-center justify-center shrink-0">
+                <Icon icon="solar:oven-linear" className="text-2xl" />
               </div>
-              <h3 className="font-playfair text-xl tracking-tight text-[#2D2823] font-medium mb-3">{t('Freshly Baked')}</h3>
-              <p className="text-sm text-[#8B847A] font-light leading-relaxed">{t('Freshly Baked Desc')}</p>
+              <div>
+                <h3 className="font-playfair text-lg font-bold text-[#261E18] mb-1">
+                  {t('Freshly Baked')}
+                </h3>
+                <p className="text-xs sm:text-sm text-[#7A6D60] leading-relaxed">
+                  {t('Freshly Baked Desc')}
+                </p>
+              </div>
             </div>
-            <div className="flex flex-col items-center text-center p-6 rounded-3xl hover:bg-[#FAFAF8] transition-colors duration-300">
-              <div className="w-14 h-14 rounded-full bg-amber-50 text-[#C6A664] flex items-center justify-center mb-6">
-                <Icon icon="solar:magic-stick-3-linear" className="text-3xl" strokeWidth="1.5" />
+
+            <div className="flex items-start gap-4 p-4 rounded-2xl">
+              <div className="w-12 h-12 rounded-2xl bg-[#EAF2ED] text-emerald-700 flex items-center justify-center shrink-0">
+                <Icon icon="solar:tag-price-linear" className="text-2xl" />
               </div>
-              <h3 className="font-playfair text-xl tracking-tight text-[#2D2823] font-medium mb-3">{t('Customizable')}</h3>
-              <p className="text-sm text-[#8B847A] font-light leading-relaxed">{t('Customizable Desc')}</p>
+              <div>
+                <h3 className="font-playfair text-lg font-bold text-[#261E18] mb-1">
+                  {t('Budget Friendly')}
+                </h3>
+                <p className="text-xs sm:text-sm text-[#7A6D60] leading-relaxed">
+                  {t('Budget Friendly Desc')}
+                </p>
+              </div>
             </div>
-            <div className="flex flex-col items-center text-center p-6 rounded-3xl hover:bg-[#FAFAF8] transition-colors duration-300">
-              <div className="w-14 h-14 rounded-full bg-stone-50 text-[#4A4238] flex items-center justify-center mb-6">
-                <Icon icon="solar:crown-linear" className="text-3xl" strokeWidth="1.5" />
+
+            <div className="flex items-start gap-4 p-4 rounded-2xl">
+              <div className="w-12 h-12 rounded-2xl bg-[#FBEFEF] text-[#C26565] flex items-center justify-center shrink-0">
+                <Icon icon="solar:magic-stick-3-linear" className="text-2xl" />
               </div>
-              <h3 className="font-playfair text-xl tracking-tight text-[#2D2823] font-medium mb-3">{t('Premium Quality')}</h3>
-              <p className="text-sm text-[#8B847A] font-light leading-relaxed">{t('Premium Quality Desc')}</p>
+              <div>
+                <h3 className="font-playfair text-lg font-bold text-[#261E18] mb-1">
+                  {t('Customizable')}
+                </h3>
+                <p className="text-xs sm:text-sm text-[#7A6D60] leading-relaxed">
+                  {t('Customizable Desc')}
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Product Section */}
-      <section id="menu" className="py-24 relative">
+      {/* CAKES CATALOG BY BUDGET */}
+      <section id="cakes" className="py-24 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-xs font-medium text-[#D5ABB3] tracking-widest uppercase mb-3 block">{t('Our Menu')}</span>
-            <h2 className="font-playfair text-4xl sm:text-5xl tracking-tight font-medium text-[#2D2823] mb-4">{t('Signature Collections')}</h2>
-            <p className="text-sm text-[#8B847A] font-light">{t('Menu Description')}</p>
+          {/* Section Header */}
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <span className="text-xs font-semibold text-[#B38743] tracking-widest uppercase mb-2 block">
+              {t('Cakes SectionTag')}
+            </span>
+            <h2 className="font-playfair text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#261E18] mb-4">
+              {t('Cakes Section Title')}
+            </h2>
+            <p className="text-sm sm:text-base text-[#6B5E52] font-light">
+              {t('Cakes Section Desc')}
+            </p>
           </div>
 
-          {/* Category: Classic Flavours */}
-          <div className="mb-16">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="font-playfair text-2xl tracking-tight font-medium text-[#2D2823]">{t('Classic Flavours')}</h3>
-              <div className="h-px bg-[#F0EBE1] flex-grow ml-6 hidden sm:block"></div>
-            </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[
-                { name: 'Bouquet de cupcake', img: '/Bouquet de cupcake.jpeg', priceLarge: '₹1200', priceSmall: '₹650' },
-                { name: 'Bûche de Noël', img: '/bûche de Noël.jpeg', priceLarge: '₹1500', priceSmall: '₹800' },
-                { name: 'Mignardises', img: '/Mignardises.jpeg', priceLarge: '₹1100', priceSmall: '₹600' },
-                { name: 'Beignets sucré', img: '/Beignets sucre.jpeg', priceLarge: '₹900', priceSmall: '₹450' },
-                { name: 'Brochettes de viande, Plantain', img: '/Brochettes de boulettes de viande-Plantain.jpeg', priceLarge: '₹1400', priceSmall: '₹750' },
-                { name: 'Mini Burger, Sandwich, Quiche', img: '/Mini Burger, Sandwich, Babouts, quiche.jpeg', priceLarge: '₹1600', priceSmall: '₹850' },
-                { name: 'Nems', img: '/Nems.jpeg', priceLarge: '₹1000', priceSmall: '₹550' },
-                { name: 'Pizza', img: '/Pizza.jpeg', priceLarge: '₹1300', priceSmall: '₹700' },
-                { name: 'Poulet panés et frits', img: '/Poulet panes et frits.jpeg', priceLarge: '₹1250', priceSmall: '₹680' },
-                { name: 'Roulé, Croissant, Mini tacos', img: '/Roule viande, Croissant jambon, Mini tacos.jpeg', priceLarge: '₹1550', priceSmall: '₹820' },
-                { name: 'Samousa', img: '/Samousa.jpeg', priceLarge: '₹950', priceSmall: '₹500' }
-              ].map((item, idx) => (
-                <div key={idx} className="group relative bg-white rounded-[1.5rem] p-3 border border-[#F0EBE1] shadow-[0_4px_20px_-10px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_-12px_rgba(213,171,179,0.3)] transition-all duration-500">
-                  <div className="aspect-[4/3] rounded-[1rem] overflow-hidden bg-[#FAFAF8] mb-4 relative">
-                    <img src={item.img} alt={item.name} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700" />
-                  </div>
-                  <div className="px-2 pb-2">
-                    <h4 className="font-playfair text-lg tracking-tight text-[#2D2823] font-medium mb-1 truncate" title={item.name}>{item.name}</h4>
-                    <div className="flex items-center gap-2 text-xs text-[#8B847A] mb-4">
-                      <span>{t('Custom Sizes')}</span>
-                      <span className="w-1 h-1 rounded-full bg-[#D5ABB3]"></span>
-                      <span>{t('Made to Order')}</span>
-                    </div>
-                    <a href={`https://wa.me/23799306723?text=Hi,%20I%20want%20to%20order%20${encodeURIComponent(item.name)}%20(Le%20Client%20si%20vient%20du%20site)`} target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF8] hover:bg-[#FCF8F9] hover:text-[#D5ABB3] text-[#4A4238] py-2.5 rounded-xl text-sm font-medium transition-colors border border-[#F0EBE1] hover:border-[#E3C2C9]">
-                      <Icon icon="solar:cart-plus-linear" strokeWidth="1.5" />
-                      {t('Order on WhatsApp')}
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Category: Chocolate & Premium */}
-          <div className="mb-10">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="font-playfair text-2xl tracking-tight font-medium text-[#2D2823]">{t('Chocolate & Premium')}</h3>
-              <div className="h-px bg-[#F0EBE1] flex-grow ml-6 hidden sm:block"></div>
-            </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Product Card 5 */}
-              <div className="group relative bg-white rounded-[1.5rem] p-3 border border-[#F0EBE1] shadow-[0_4px_20px_-10px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_-12px_rgba(213,171,179,0.3)] transition-all duration-500">
-                <div className="aspect-[4/3] rounded-[1rem] overflow-hidden bg-[#FAFAF8] mb-4 relative">
-                  <img src="/Chocolate Drip Cake with Fresh Fruit - Gosia Cake.jpg" alt="Chocolate Drip Cake" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700" />
-                  <span className="absolute top-3 right-3 bg-[#2D2823] text-white text-[10px] font-medium px-2 py-1 rounded-md uppercase tracking-wide">{t('Bestseller')}</span>
-                </div>
-                <div className="px-2 pb-2">
-                  <h4 className="font-playfair text-lg tracking-tight text-[#2D2823] font-medium mb-1">Chocolate Drip Cake with Fresh Fruit - Gosia Cake</h4>
-                  <div className="flex items-center gap-2 text-xs text-[#8B847A] mb-4">
-                    <span>{t('Custom Sizes')}</span>
-                    <span className="w-1 h-1 rounded-full bg-[#D5ABB3]"></span>
-                    <span>{t('Made to Order')}</span>
-                  </div>
-                  <a href="https://wa.me/23799306723?text=Hi,%20I%20want%20to%20order%20Chocolate%20Drip%20Cake%20with%20Fresh%20Fruit%20-%20Gosia%20Cake%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF8] hover:bg-[#FCF8F9] hover:text-[#D5ABB3] text-[#4A4238] py-2.5 rounded-xl text-sm font-medium transition-colors border border-[#F0EBE1] hover:border-[#E3C2C9]">
-                    <Icon icon="solar:cart-plus-linear" strokeWidth="1.5" />
-                    {t('Order on WhatsApp')}
-                  </a>
-                </div>
-              </div>
-              {/* Product Card 6 */}
-              <div className="group relative bg-white rounded-[1.5rem] p-3 border border-[#F0EBE1] shadow-[0_4px_20px_-10px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_-12px_rgba(213,171,179,0.3)] transition-all duration-500">
-                <div className="aspect-[4/3] rounded-[1rem] overflow-hidden bg-[#FAFAF8] mb-4 relative">
-                  <img src="https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Dark Forest Symphony" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700" />
-                </div>
-                <div className="px-2 pb-2">
-                  <h4 className="font-playfair text-lg tracking-tight text-[#2D2823] font-medium mb-1">Dark Forest Symphony</h4>
-                  <div className="flex items-center gap-2 text-xs text-[#8B847A] mb-4">
-                    <span>{t('Custom Sizes')}</span>
-                    <span className="w-1 h-1 rounded-full bg-[#D5ABB3]"></span>
-                    <span>{t('Made to Order')}</span>
-                  </div>
-                  <a href="https://wa.me/23799306723?text=Hi,%20I%20want%20to%20order%20Dark%20Forest%20Symphony%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF8] hover:bg-[#FCF8F9] hover:text-[#D5ABB3] text-[#4A4238] py-2.5 rounded-xl text-sm font-medium transition-colors border border-[#F0EBE1] hover:border-[#E3C2C9]">
-                    <Icon icon="solar:cart-plus-linear" strokeWidth="1.5" />
-                    {t('Order on WhatsApp')}
-                  </a>
-                </div>
-              </div>
-              {/* Product Card 7 */}
-              <div className="group relative bg-white rounded-[1.5rem] p-3 border border-[#F0EBE1] shadow-[0_4px_20px_-10px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_-12px_rgba(213,171,179,0.3)] transition-all duration-500">
-                <div className="aspect-[4/3] rounded-[1rem] overflow-hidden bg-[#FAFAF8] mb-4 relative">
-                  <img src="https://images.unsplash.com/photo-1588195538326-c5b1e9f80a1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Caramel Macchiato" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700" />
-                </div>
-                <div className="px-2 pb-2">
-                  <h4 className="font-playfair text-lg tracking-tight text-[#2D2823] font-medium mb-1">Caramel Macchiato</h4>
-                  <div className="flex items-center gap-2 text-xs text-[#8B847A] mb-4">
-                    <span>{t('Custom Sizes')}</span>
-                    <span className="w-1 h-1 rounded-full bg-[#D5ABB3]"></span>
-                    <span>{t('Made to Order')}</span>
-                  </div>
-                  <a href="https://wa.me/23799306723?text=Hi,%20I%20want%20to%20order%20Caramel%20Macchiato%20(Le%20Client%20si%20vient%20du%20site)%20" target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF8] hover:bg-[#FCF8F9] hover:text-[#D5ABB3] text-[#4A4238] py-2.5 rounded-xl text-sm font-medium transition-colors border border-[#F0EBE1] hover:border-[#E3C2C9]">
-                    <Icon icon="solar:cart-plus-linear" strokeWidth="1.5" />
-                    {t('Order on WhatsApp')}
-                  </a>
-                </div>
-              </div>
-               {/* Product Card 8 */}
-               <div className="group relative bg-white rounded-[1.5rem] p-3 border border-[#F0EBE1] shadow-[0_4px_20px_-10px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_-12px_rgba(213,171,179,0.3)] transition-all duration-500">
-                <div className="aspect-[4/3] rounded-[1rem] overflow-hidden bg-[#FAFAF8] mb-4 relative">
-                  <img src="/Black & Gold Luxe Birthday Cake.jpg" alt="Black & Gold Luxe Birthday Cake" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700" />
-                </div>
-                <div className="px-2 pb-2">
-                  <h4 className="font-playfair text-lg tracking-tight text-[#2D2823] font-medium mb-1">Black & Gold Luxe Birthday Cake</h4>
-                  <div className="flex items-center gap-2 text-xs text-[#8B847A] mb-4">
-                    <span>{t('Custom Sizes')}</span>
-                    <span className="w-1 h-1 rounded-full bg-[#D5ABB3]"></span>
-                    <span>{t('Made to Order')}</span>
-                  </div>
-                  <a href="https://wa.me/23799306723?text=Hi,%20I%20want%20to%20order%20Black%20%26%20Gold%20Luxe%20Birthday%20Cake%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF8] hover:bg-[#FCF8F9] hover:text-[#D5ABB3] text-[#4A4238] py-2.5 rounded-xl text-sm font-medium transition-colors border border-[#F0EBE1] hover:border-[#E3C2C9]">
-                    <Icon icon="solar:cart-plus-linear" strokeWidth="1.5" />
-                    {t('Order on WhatsApp')}
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="text-center mt-12">
-            <a href="#menu" className="inline-flex items-center gap-2 text-sm font-medium text-[#C6A664] hover:text-[#B39352] transition-colors">
-              {t('View All Our Special & Signature Art')}
-              <Icon icon="solar:arrow-right-linear" strokeWidth="1.5" />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Custom Cake Banner */}
-      <section className="py-16 bg-[#2D2823] relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80')] opacity-10 object-cover w-full h-full mix-blend-overlay"></div>
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <span className="text-xs font-medium text-[#C6A664] tracking-widest uppercase mb-3 block">{t('Create Your Dream')}</span>
-          <h2 className="font-playfair text-3xl sm:text-4xl tracking-tight font-medium text-white mb-6">{t('Custom Cake Orders')}</h2>
-          <p className="text-sm text-[#A8A29A] font-light max-w-2xl mx-auto mb-10">{t('Custom Cake Desc')}</p>
-          
-          <form onSubmit={handleQuoteSubmit} className="max-w-3xl mx-auto bg-white/5 backdrop-blur-sm p-6 sm:p-8 rounded-3xl border border-white/10 flex flex-col sm:flex-row gap-4">
-            <input
-              type="text"
-              name="name"
-              value={quoteName}
-              onChange={(event) => setQuoteName(event.target.value)}
-              placeholder={t('Your Name')}
-              className="flex-1 bg-transparent border-b border-white/20 focus:border-[#D5ABB3] outline-none py-3 text-sm text-white placeholder:text-white/40 transition-colors"
-            />
-            <input
-              type="text"
-              name="occasion"
-              value={quoteOccasion}
-              onChange={(event) => setQuoteOccasion(event.target.value)}
-              placeholder={t('Occasion (e.g., Wedding)')}
-              className="flex-1 bg-transparent border-b border-white/20 focus:border-[#D5ABB3] outline-none py-3 text-sm text-white placeholder:text-white/40 transition-colors"
-            />
-            <button type="submit" className="inline-flex items-center justify-center gap-2 bg-[#D5ABB3] hover:bg-[#C99CA5] text-white text-sm font-medium px-8 py-3.5 rounded-xl transition-all duration-300 mt-4 sm:mt-0 flex-shrink-0">
-              {t('Get a Quote')}
-              <Icon icon="solar:arrow-right-linear" strokeWidth="1.5" />
+          {/* Budget Filter Tabs */}
+          <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap mb-16">
+            <button
+              onClick={() => setSelectedTierFilter('all')}
+              className={`px-4 sm:px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all ${
+                selectedTierFilter === 'all'
+                  ? 'bg-[#261E18] text-white shadow-md'
+                  : 'bg-white text-[#6B5E52] border border-[#E0D5C7] hover:border-[#B38743] hover:text-[#B38743]'
+              }`}
+            >
+              {t('allBudgets')}
             </button>
-          </form>
-        </div>
-      </section>
-
-      {/* About Us */}
-      <section id="about" className="py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="relative">
-              <div className="absolute -inset-4 bg-[#FCF8F9] rounded-[2.5rem] transform -rotate-3 z-0"></div>
-              <img src="/Logo.jpeg" alt="Sweetmeats Logo" className="relative z-10 rounded-[2rem] shadow-xl object-cover w-full h-full aspect-[4/5]" />
-            </div>
-            <div>
-              <span className="text-xs font-medium text-[#D5ABB3] tracking-widest uppercase mb-3 block">{t('Our Story')}</span>
-              <h2 className="font-playfair text-3xl sm:text-4xl tracking-tight font-medium text-[#2D2823] mb-6">{t('Baking Memories Since 2020')}</h2>
-              <p className="text-sm text-[#8B847A] font-light leading-relaxed mb-6">
-                {t('Story Desc 1')}
-              </p>
-              <p className="text-sm text-[#8B847A] font-light leading-relaxed mb-10">
-                {t('Story Desc 2')}
-              </p>
-              <div className="flex items-center gap-6">
-                <div className="text-center">
-                  <p className="font-playfair text-3xl text-[#C6A664] font-medium"><CountUp end={5} duration={2.5} enableScrollSpy scrollSpyOnce />k+</p>
-                  <p className="text-xs text-[#8B847A] uppercase tracking-wide mt-1">{t('Cakes Baked')}</p>
-                </div>
-                <div className="w-px h-10 bg-[#F0EBE1]"></div>
-                <div className="text-center">
-                  <p className="font-playfair text-3xl text-[#C6A664] font-medium"><CountUp end={100} duration={2.5} enableScrollSpy scrollSpyOnce />%</p>
-                  <p className="text-xs text-[#8B847A] uppercase tracking-wide mt-1">{t('Freshness')}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Gallery */}
-      <section id="gallery" className="py-20 bg-white border-t border-[#F0EBE1]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row justify-between items-end mb-12">
-            <div>
-              <span className="text-xs font-medium text-[#D5ABB3] tracking-widest uppercase mb-3 block">{t('Gallery')}</span>
-              <h2 className="font-playfair text-3xl tracking-tight font-medium text-[#2D2823]">{t('Follow Us on Facebook')}</h2>
-            </div>
-            <a href="https://m.facebook.com/search_results/?q=sweet+meats+p%C3%A2tisserie" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-[#4A4238] hover:text-[#D5ABB3] transition-colors mt-4 sm:mt-0">
-              <Icon icon="mdi:facebook" className="text-xl" strokeWidth="1.5" />
-              @sweet Meats Patisserie
-            </a>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <a href="#" className="group relative aspect-square rounded-2xl overflow-hidden bg-[#FAFAF8] sm:aspect-auto sm:h-80">
-              <img src="/Gateau personnalise'(Mikey).jpeg" alt="Insta Post" className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-[#2D2823]/0 group-hover:bg-[#2D2823]/30 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                <Icon icon="solar:heart-linear" className="text-white text-3xl" strokeWidth="1.5" />
-              </div>
-            </a>
-            <a href="#" className="group relative aspect-square rounded-2xl overflow-hidden bg-[#FAFAF8] sm:aspect-auto sm:h-80">
-              <img src="/Gateau personnalise'(animaux).jpeg" alt="Insta Post" className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-[#2D2823]/0 group-hover:bg-[#2D2823]/30 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                <Icon icon="solar:heart-linear" className="text-white text-3xl" strokeWidth="1.5" />
-              </div>
-            </a>
-            <a href="#" className="group relative aspect-square rounded-2xl overflow-hidden bg-[#FAFAF8] sm:aspect-auto sm:h-80">
-              <img src="/Genoise Choco fourage.jpeg" alt="Insta Post" className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-[#2D2823]/0 group-hover:bg-[#2D2823]/30 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                <Icon icon="solar:heart-linear" className="text-white text-3xl" strokeWidth="1.5" />
-              </div>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Reviews */}
-      <section className="py-24 bg-[#FCF8F9]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="font-playfair text-3xl sm:text-4xl tracking-tight font-medium text-[#2D2823]">{t('Sweet Words from You')}</h2>
-          </div>
-          <div className="relative min-h-[300px] sm:min-h-[320px] w-full max-w-4xl mx-auto flex items-stretch">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentReviewIndex}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="w-full flex"
-              >
-                <div className="bg-white p-8 sm:p-12 rounded-[2.5rem] shadow-[0_8px_30px_-12px_rgba(0,0,0,0.06)] border border-[#F0EBE1] w-full flex flex-col justify-center items-center text-center">
-                  <div className="flex text-[#C6A664] mb-6">
-                    <Icon icon="solar:star-bold" strokeWidth="1.5" className="text-xl" />
-                    <Icon icon="solar:star-bold" strokeWidth="1.5" className="text-xl" />
-                    <Icon icon="solar:star-bold" strokeWidth="1.5" className="text-xl" />
-                    <Icon icon="solar:star-bold" strokeWidth="1.5" className="text-xl" />
-                    <Icon icon="solar:star-bold" strokeWidth="1.5" className="text-xl" />
-                  </div>
-                  <p className="text-lg sm:text-xl text-[#4A4238] leading-relaxed mb-8 italic font-light max-w-2xl text-balance">
-                    "{t(reviews[currentReviewIndex].textKey)}"
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-[#FAFAF8] flex items-center justify-center text-sm font-medium text-[#8B847A] border border-[#F0EBE1]">
-                      {reviews[currentReviewIndex].initials}
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-[#2D2823]">{reviews[currentReviewIndex].name}</p>
-                      <p className="text-xs text-[#C6A664] uppercase tracking-wider mt-0.5">{t(reviews[currentReviewIndex].typeKey)}</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-          <div className="flex justify-center gap-3 mt-10">
-            {reviews.map((_, idx) => (
+            {CAKE_TIERS.map((tier) => (
               <button
-                key={idx}
-                onClick={() => setCurrentReviewIndex(idx)}
-                className={`transition-all duration-300 rounded-full ${idx === currentReviewIndex ? 'w-8 h-2 bg-[#D5ABB3]' : 'w-2 h-2 bg-[#E5E0D8] hover:bg-[#D5ABB3]/50'}`}
-                aria-label={`Go to slide ${idx + 1}`}
-              />
+                key={tier.id}
+                onClick={() => setSelectedTierFilter(tier.id)}
+                className={`px-4 sm:px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all flex items-center gap-2 ${
+                  selectedTierFilter === tier.id
+                    ? 'bg-[#B38743] text-white shadow-md'
+                    : 'bg-white text-[#6B5E52] border border-[#E0D5C7] hover:border-[#B38743] hover:text-[#B38743]'
+                }`}
+              >
+                <span>{tier.priceFormatted}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                    selectedTierFilter === tier.id ? 'bg-white/20 text-white' : 'bg-[#F2ECE3] text-[#7A6D60]'
+                  }`}
+                >
+                  {tier.totalImages}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Tiers List */}
+          <div className="space-y-20">
+            {displayedTiers.map((tier) => {
+              // Highlight the best 8 featured models for direct display
+              const featuredImages = tier.images.slice(0, 8);
+
+              return (
+                <div key={tier.id} className="bg-[#FAF7F2] rounded-3xl p-6 sm:p-8 border border-[#EBE1D5] shadow-xs">
+                  {/* Tier Header Banner */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-8 border-b border-[#EBE1D5]">
+                    <div>
+                      <div className="flex items-center gap-3 mb-1">
+                        <span className="bg-[#B38743] text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                          {tier.priceFormatted}
+                        </span>
+                        <span className="text-xs text-[#7A6D60] font-medium">
+                          {tier.totalImages} modèles disponibles
+                        </span>
+                      </div>
+                      <h3 className="font-playfair text-2xl sm:text-3xl font-bold text-[#261E18]">
+                        {t(tier.titleKey)}
+                      </h3>
+                      <p className="text-sm text-[#7A6D60] max-w-xl mt-1">
+                        {t(tier.descKey)}
+                      </p>
+                    </div>
+
+                    {/* View All Button */}
+                    <button
+                      onClick={() => setActiveModalTier(tier)}
+                      className="self-start md:self-auto inline-flex items-center gap-2 bg-white hover:bg-[#F5ECE1] text-[#261E18] border border-[#DFCBB5] text-xs sm:text-sm font-medium px-5 py-2.5 rounded-full transition-all shadow-xs shrink-0"
+                    >
+                      <Icon icon="solar:gallery-wide-linear" className="text-lg text-[#B38743]" />
+                      <span>{t('viewAllInTier', { count: tier.totalImages })}</span>
+                    </button>
+                  </div>
+
+                  {/* Featured Grid (8-10 cards) */}
+                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                    {featuredImages.map((imgSrc, idx) => {
+                      const refCode = `${tier.id.toUpperCase()}-${String(idx + 1).padStart(2, '0')}`;
+                      return (
+                        <div
+                          key={idx}
+                          className="group bg-white rounded-2xl overflow-hidden border border-[#EFE8DF] shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col"
+                        >
+                          {/* Image preview with zoom modal trigger */}
+                          <div
+                            onClick={() =>
+                              setActiveLightbox({
+                                tierTitle: t(tier.titleKey),
+                                tierPrice: tier.priceFormatted,
+                                tierId: tier.id,
+                                image: imgSrc,
+                                index: idx,
+                                total: tier.images.length,
+                                allImages: tier.images
+                              })
+                            }
+                            className="aspect-square bg-[#F5ECE1] relative overflow-hidden cursor-pointer"
+                          >
+                            <img
+                              src={imgSrc}
+                              alt={`Gâteau ${tier.priceFormatted} - ${refCode}`}
+                              loading="lazy"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            {/* Hover overlay hint */}
+                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <span className="bg-white/90 backdrop-blur-xs text-[#261E18] text-xs font-medium px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5">
+                                <Icon icon="solar:magnifer-zoom-in-linear" className="text-sm" />
+                                Agrandir
+                              </span>
+                            </div>
+                            {/* Reference badge */}
+                            <span className="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur-xs text-white text-[10px] font-semibold px-2 py-0.5 rounded-md">
+                              #{refCode}
+                            </span>
+                          </div>
+
+                          {/* Card Content & Action */}
+                          <div className="p-3.5 flex flex-col justify-between flex-grow">
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="font-playfair font-bold text-sm sm:text-base text-[#261E18]">
+                                {tier.priceFormatted}
+                              </span>
+                              <span className="text-[10px] text-[#8C7D70] font-medium uppercase tracking-wider">
+                                Fait sur mesure
+                              </span>
+                            </div>
+
+                            <a
+                              href={getCakeOrderLink(tier, idx)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="w-full inline-flex items-center justify-center gap-1.5 bg-[#FAF7F2] hover:bg-[#261E18] text-[#261E18] hover:text-white border border-[#E6DDD2] hover:border-[#261E18] py-2 rounded-xl text-xs font-medium transition-all"
+                            >
+                              <Icon icon="solar:chat-round-dots-linear" className="text-sm text-emerald-500" />
+                              <span>{t('orderThisModel')}</span>
+                            </a>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Bottom prompt to explore the rest */}
+                  <div className="mt-8 text-center pt-6 border-t border-[#EFE7DE]">
+                    <button
+                      onClick={() => setActiveModalTier(tier)}
+                      className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#B38743] hover:text-[#8E672B] transition-colors"
+                    >
+                      <span>{t('viewAllInTier', { count: tier.totalImages })}</span>
+                      <Icon icon="solar:arrow-right-linear" className="text-base" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* SWEET PASTRIES & MIGNARDISES */}
+      <section id="pastries" className="py-24 bg-white border-t border-[#EFE7DE]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-xs font-semibold text-[#B38743] tracking-widest uppercase mb-2 block">
+              {t('sweetSectionTag')}
+            </span>
+            <h2 className="font-playfair text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#261E18] mb-4">
+              {t('sweetSectionTitle')}
+            </h2>
+            <p className="text-sm sm:text-base text-[#6B5E52] font-light">
+              {t('sweetSectionDesc')}
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {SWEET_PASTRIES.map((item) => (
+              <div
+                key={item.id}
+                className="group bg-[#FAF7F2] rounded-3xl p-4 border border-[#EFE8DF] shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-white mb-4 relative">
+                    <img
+                      src={item.image}
+                      alt={t(item.titleKey)}
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    {item.badgeKey && (
+                      <span className="absolute top-3 right-3 bg-[#261E18]/80 backdrop-blur-xs text-white text-[10px] font-medium px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        {t(item.badgeKey)}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-playfair text-lg font-bold text-[#261E18] mb-1">
+                    {t(item.titleKey)}
+                  </h3>
+                  <p className="text-xs text-[#7A6D60] leading-relaxed mb-4">
+                    {t(item.descKey)}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-[#EAE1D5]">
+                  <div className="flex items-center justify-between mb-3 text-xs">
+                    <span className="font-semibold text-[#B38743]">{item.priceFormatted}</span>
+                    <span className="text-[#8C7D70]">Frais & Fait Maison</span>
+                  </div>
+                  <a
+                    href={getProductOrderLink(item)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-[#261E18] hover:bg-[#3D3228] text-white py-2.5 rounded-xl text-xs font-medium transition-colors"
+                  >
+                    <Icon icon="solar:cart-plus-linear" className="text-sm" />
+                    <span>{t('Order on WhatsApp')}</span>
+                  </a>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Footer / Contact */}
-      <footer id="contact" className="bg-white pt-20 pb-10 border-t border-[#F0EBE1]">
+      {/* SAVORY CATERING & FINGER FOOD */}
+      <section id="savory" className="py-24 bg-[#F5EFE6] border-t border-[#EAE1D5]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
-            <div className="md:col-span-5">
-              <div className="flex items-center gap-3 mb-6">
-                <img src="/Logo.jpeg" alt="Sweetmeats Logo" className="h-10 w-auto object-contain mix-blend-multiply rounded-md" />
-                <span className="font-playfair text-xl font-medium tracking-tighter text-[#2D2823]">SWEETMEATS</span>
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-xs font-semibold text-emerald-700 tracking-widest uppercase mb-2 block">
+              {t('savorySectionTag')}
+            </span>
+            <h2 className="font-playfair text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#261E18] mb-4">
+              {t('savorySectionTitle')}
+            </h2>
+            <p className="text-sm sm:text-base text-[#6B5E52] font-light">
+              {t('savorySectionDesc')}
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {SAVORY_CATERING.map((item) => (
+              <div
+                key={item.id}
+                className="group bg-white rounded-3xl p-4 border border-[#E8DDCE] shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#FAF7F2] mb-4 relative">
+                    <img
+                      src={item.image}
+                      alt={t(item.titleKey)}
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    {item.badgeKey && (
+                      <span className="absolute top-3 right-3 bg-emerald-700 text-white text-[10px] font-medium px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        {t(item.badgeKey)}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-playfair text-lg font-bold text-[#261E18] mb-1">
+                    {t(item.titleKey)}
+                  </h3>
+                  <p className="text-xs text-[#7A6D60] leading-relaxed mb-4">
+                    {t(item.descKey)}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-[#EAE1D5]">
+                  <div className="flex items-center justify-between mb-3 text-xs">
+                    <span className="font-semibold text-[#B38743]">{item.priceFormatted}</span>
+                    <span className="text-emerald-700 font-medium">Pour réceptions</span>
+                  </div>
+                  <a
+                    href={getProductOrderLink(item)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-[#FAF7F2] hover:bg-[#261E18] hover:text-white text-[#261E18] border border-[#DFCBB5] py-2.5 rounded-xl text-xs font-medium transition-colors"
+                  >
+                    <Icon icon="solar:cart-plus-linear" className="text-sm" />
+                    <span>{t('Order on WhatsApp')}</span>
+                  </a>
+                </div>
               </div>
-              <p className="text-sm text-[#8B847A] font-light mb-8 max-w-sm">{t('Footer Description')}</p>
-              <a href="https://wa.me/23799306723?text=Hi,%20I%20have%20an%20inquiry%20(Le%20Client%20si%20vient%20du%20site)." target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-[#2D2823] hover:bg-[#1A1714] text-white text-sm font-medium px-6 py-3 rounded-xl transition-all duration-300 w-fit">
-                <Icon icon="solar:letter-linear" strokeWidth="1.5" />
-                {t('Contact via WhatsApp')}
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CUSTOM CAKE CONFIGURATOR & QUOTE REQUEST */}
+      <section id="custom" className="py-24 bg-white border-t border-[#EFE7DE]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-12 gap-12 items-center">
+            {/* Form Introduction */}
+            <div className="lg:col-span-5">
+              <span className="text-xs font-semibold text-[#B38743] tracking-widest uppercase mb-2 block">
+                {t('Create Your Dream')}
+              </span>
+              <h2 className="font-playfair text-3xl sm:text-4xl font-bold tracking-tight text-[#261E18] mb-4">
+                {t('Custom Cake Orders')}
+              </h2>
+              <p className="text-sm sm:text-base text-[#6B5E52] leading-relaxed mb-6 font-light">
+                {t('Custom Cake Desc')}
+              </p>
+
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#F6EDE2] text-[#B38743] flex items-center justify-center shrink-0 mt-0.5">
+                    <Icon icon="solar:check-circle-linear" className="text-lg" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-[#261E18]">Designs 100% Personnalisés</h4>
+                    <p className="text-xs text-[#7A6D60]">Gâteaux à thème, photos comestibles, toppers sur-mesure et étages grandioses.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#F6EDE2] text-[#B38743] flex items-center justify-center shrink-0 mt-0.5">
+                    <Icon icon="solar:check-circle-linear" className="text-lg" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-[#261E18]">Saveurs Gourmandes au Choix</h4>
+                    <p className="text-xs text-[#7A6D60]">Chocolat belge, vanille de Madagascar, framboise, caramel beurre salé, red velvet...</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#F6EDE2] text-[#B38743] flex items-center justify-center shrink-0 mt-0.5">
+                    <Icon icon="solar:check-circle-linear" className="text-lg" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-[#261E18]">Réponse Rapide sur WhatsApp</h4>
+                    <p className="text-xs text-[#7A6D60]">Votre demande est immédiatement envoyée à notre atelier pour confirmation rapide.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Interactive Form Card */}
+            <div className="lg:col-span-7 bg-[#FAF7F2] rounded-3xl p-6 sm:p-10 border border-[#E8DDCE] shadow-sm">
+              <form onSubmit={handleCustomQuoteSubmit} className="space-y-5">
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#4A3E34] uppercase tracking-wider mb-2">
+                      {t('Your Name')} *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={quoteName}
+                      onChange={(e) => setQuoteName(e.target.value)}
+                      placeholder="Ex: Diane M."
+                      className="w-full bg-white rounded-xl px-4 py-3 text-sm border border-[#DDD0C2] focus:outline-none focus:border-[#B38743] transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#4A3E34] uppercase tracking-wider mb-2">
+                      {t('Occasion (e.g., Wedding)')} *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={quoteOccasion}
+                      onChange={(e) => setQuoteOccasion(e.target.value)}
+                      placeholder="Ex: Anniversaire 30 ans, Mariage..."
+                      className="w-full bg-white rounded-xl px-4 py-3 text-sm border border-[#DDD0C2] focus:outline-none focus:border-[#B38743] transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#4A3E34] uppercase tracking-wider mb-2">
+                      {t('Event Date')}
+                    </label>
+                    <input
+                      type="date"
+                      value={quoteDate}
+                      onChange={(e) => setQuoteDate(e.target.value)}
+                      className="w-full bg-white rounded-xl px-4 py-3 text-sm border border-[#DDD0C2] focus:outline-none focus:border-[#B38743] transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#4A3E34] uppercase tracking-wider mb-2">
+                      {t('Guest Count')}
+                    </label>
+                    <input
+                      type="text"
+                      value={quoteGuests}
+                      onChange={(e) => setQuoteGuests(e.target.value)}
+                      placeholder="Ex: 15-20 personnes"
+                      className="w-full bg-white rounded-xl px-4 py-3 text-sm border border-[#DDD0C2] focus:outline-none focus:border-[#B38743] transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#4A3E34] uppercase tracking-wider mb-2">
+                      {t('Budget Estimate')}
+                    </label>
+                    <select
+                      value={quoteBudget}
+                      onChange={(e) => setQuoteBudget(e.target.value)}
+                      className="w-full bg-white rounded-xl px-4 py-3 text-sm border border-[#DDD0C2] focus:outline-none focus:border-[#B38743] transition-colors"
+                    >
+                      <option value="10 000 - 15 000 FCFA">10 000 - 15 000 FCFA</option>
+                      <option value="15 000 - 25 000 FCFA">15 000 - 25 000 FCFA</option>
+                      <option value="25 000 - 50 000 FCFA">25 000 - 50 000 FCFA</option>
+                      <option value="50 000 FCFA et plus">50 000 FCFA et plus (Mariages & Événements)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#4A3E34] uppercase tracking-wider mb-2">
+                      {t('Flavor / Theme')}
+                    </label>
+                    <input
+                      type="text"
+                      value={quoteFlavor}
+                      onChange={(e) => setQuoteFlavor(e.target.value)}
+                      placeholder="Ex: Chocolat & Vanille, thème or et blanc"
+                      className="w-full bg-white rounded-xl px-4 py-3 text-sm border border-[#DDD0C2] focus:outline-none focus:border-[#B38743] transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full inline-flex items-center justify-center gap-2 bg-[#261E18] hover:bg-[#3D3228] text-white font-medium py-4 rounded-xl text-sm transition-all shadow-md active:scale-98"
+                >
+                  <Icon icon="solar:chat-round-dots-linear" className="text-lg text-emerald-400" />
+                  <span>{t('Get a Quote')}</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ATELIER STORY & 3D ANIMATED TESTIMONIALS (SIDE BY SIDE) */}
+      <section id="about" className="py-24 bg-[#FAF7F2] border-t border-[#EFE7DE]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-14 items-center">
+            {/* Left Column: Story & Atelier Heritage */}
+            <div className="lg:col-span-6">
+              <span className="text-xs font-semibold text-[#B38743] tracking-widest uppercase mb-2 block">
+                {t('Our Story')}
+              </span>
+              <h2 className="font-playfair text-3xl sm:text-4xl font-bold tracking-tight text-[#261E18] mb-6">
+                {t('Baking Memories Since 2020')}
+              </h2>
+              <div className="space-y-4 text-sm sm:text-base text-[#6B5E52] font-light leading-relaxed">
+                <p>{t('Story Desc 1')}</p>
+                <p>{t('Story Desc 2')}</p>
+              </div>
+
+              <div className="mt-8 flex items-center gap-6">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-11 h-11 rounded-full bg-[#EAE0D3] flex items-center justify-center text-[#B38743]">
+                    <Icon icon="solar:star-fall-minimalistic-linear" className="text-xl" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-sm text-[#261E18] block">4.9 / 5</span>
+                    <span className="text-xs text-[#8C7D70]">Satisfaction client</span>
+                  </div>
+                </div>
+                <div className="h-8 w-px bg-[#DDD0C2]"></div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-11 h-11 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                    <Icon icon="solar:box-minimalistic-linear" className="text-xl" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-sm text-[#261E18] block">100% Frais</span>
+                    <span className="text-xs text-[#8C7D70]">Confection du jour</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: 3D Stacked Animated Testimonial Card */}
+            <div className="lg:col-span-6">
+              <AnimatedTestimonials testimonials={testimonialsData} autoplay={true} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer id="contact" className="bg-[#261E18] text-[#D8CCC1] pt-16 pb-12 border-t border-[#3A2F27]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-[#3A2F27]">
+            {/* Brand column */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <img
+                  src="/Logo.jpeg"
+                  alt="Sweetmeats Logo"
+                  className="h-10 w-10 object-cover rounded-full border border-[#524438]"
+                />
+                <span className="font-playfair text-xl font-bold tracking-tight text-white">
+                  SWEETMEATS
+                </span>
+              </div>
+              <p className="text-xs text-[#A8988B] leading-relaxed mb-6">
+                {t('Footer Description')}
+              </p>
+              <a
+                href={`https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent('Bonjour Sweetmeats !')}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 bg-[#B38743] hover:bg-[#9B7336] text-white text-xs font-semibold px-4 py-2.5 rounded-full transition-colors"
+              >
+                <Icon icon="solar:chat-round-dots-linear" className="text-base" />
+                <span>{t('Contact via WhatsApp')}</span>
               </a>
             </div>
-            <div className="md:col-span-3">
-              <h4 className="font-medium text-[#2D2823] mb-6 tracking-tight">{t('Quick Links')}</h4>
-              <ul className="space-y-4">
-                <li><a href="#" className="text-sm text-[#8B847A] hover:text-[#D5ABB3] transition-colors">{t('Home')}</a></li>
-                <li><a href="#menu" className="text-sm text-[#8B847A] hover:text-[#D5ABB3] transition-colors">{t('Menu')}</a></li>
-                <li><a href="#about" className="text-sm text-[#8B847A] hover:text-[#D5ABB3] transition-colors">{t('About')}</a></li>
-                <li><a href="#contact" className="text-sm text-[#8B847A] hover:text-[#D5ABB3] transition-colors">{t('Contact')}</a></li>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+                {t('Quick Links')}
+              </h4>
+              <ul className="space-y-2.5 text-xs">
+                <li>
+                  <a href="#cakes" className="hover:text-white transition-colors">
+                    {t('Cakes')}
+                  </a>
+                </li>
+                <li>
+                  <a href="#pastries" className="hover:text-white transition-colors">
+                    {t('Pastries')}
+                  </a>
+                </li>
+                <li>
+                  <a href="#savory" className="hover:text-white transition-colors">
+                    {t('Savory')}
+                  </a>
+                </li>
+                <li>
+                  <a href="#custom" className="hover:text-white transition-colors">
+                    {t('CustomOrders')}
+                  </a>
+                </li>
+                <li>
+                  <a href="#about" className="hover:text-white transition-colors">
+                    {t('About')}
+                  </a>
+                </li>
               </ul>
             </div>
-            <div className="md:col-span-4">
-              <h4 className="font-medium text-[#2D2823] mb-6 tracking-tight">{t('Contact Info')}</h4>
-              <ul className="space-y-4">
-                <li className="flex items-start gap-3">
-                  <Icon icon="solar:map-point-linear" className="text-[#D5ABB3] text-lg mt-0.5" strokeWidth="1.5" />
-                  <span className="text-sm text-[#8B847A] font-light">Ngousso, Yaounde</span>
+
+            {/* Budget Ranges */}
+            <div>
+              <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+                Nos Tarifs Gâteaux
+              </h4>
+              <ul className="space-y-2 text-xs text-[#A8988B]">
+                <li>• Gamme 10 000 FCFA (85 modèles)</li>
+                <li>• Gamme 12 000 FCFA (42 modèles)</li>
+                <li>• Gamme 15 000 FCFA (36 modèles)</li>
+                <li>• Gamme 20 000 FCFA (8 modèles)</li>
+                <li>• Gamme 25 000 FCFA+ (79 modèles)</li>
+              </ul>
+            </div>
+
+            {/* Contact info */}
+            <div>
+              <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+                {t('Contact Info')}
+              </h4>
+              <ul className="space-y-3 text-xs text-[#A8988B]">
+                <li className="flex items-center gap-2">
+                  <Icon icon="solar:phone-linear" className="text-base text-[#B38743]" />
+                  <span>+237 99 30 67 23 (WhatsApp & Appels)</span>
                 </li>
-                <li className="flex items-center gap-3">
-                  <Icon icon="solar:phone-linear" className="text-[#D5ABB3] text-lg" strokeWidth="1.5" />
-                  <span className="text-sm text-[#8B847A] font-light">+237 99 30 67 23</span>
+                <li className="flex items-center gap-2">
+                  <Icon icon="solar:clock-circle-linear" className="text-base text-[#B38743]" />
+                  <span>{t('Mon - Sun')}</span>
                 </li>
-                <li className="flex items-center gap-3">
-                  <Icon icon="solar:clock-circle-linear" className="text-[#D5ABB3] text-lg" strokeWidth="1.5" />
-                  <span className="text-sm text-[#8B847A] font-light">{t('Mon - Sun')}</span>
+                <li className="flex items-center gap-2">
+                  <Icon icon="solar:map-point-linear" className="text-base text-[#B38743]" />
+                  <span>{t('Location')}</span>
                 </li>
               </ul>
             </div>
           </div>
-          <div className="pt-8 border-t border-[#F0EBE1] flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-[#8B847A]">{t('All rights reserved')}</p>
-            <div className="flex items-center gap-4 text-[#8B847A]">
-              <a href="#" className="hover:text-[#D5ABB3] transition-colors"><Icon icon="solar:plate-linear" className="text-lg" strokeWidth="1.5" /></a>
-              <a href="#" className="hover:text-[#D5ABB3] transition-colors"><Icon icon="solar:shop-linear" className="text-lg" strokeWidth="1.5" /></a>
-            </div>
+
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#8C7D70] gap-4">
+            <p>{t('All rights reserved')}</p>
+            <p>Confectionné avec amour pour vos célébrations gourmandes.</p>
           </div>
         </div>
       </footer>
 
-      {/* Floating WhatsApp Button */}
-      <a href="https://wa.me/23799306723?text=Hi,%20I%20want%20to%20order%20a%20cake!%20(Le%20Client%20si%20vient%20du%20site)" target="_blank" rel="noreferrer" className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_8px_30px_rgba(37,211,102,0.4)] hover:scale-110 transition-transform duration-300 group">
-        <span className="absolute inset-0 rounded-full bg-[#25D366] animate-ping opacity-20"></span>
-        <svg className="w-8 h-8 relative z-10" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-5.824 4.74-10.563 10.564-10.563 5.826 0 10.564 4.74 10.564 10.564 0 5.827-4.739 10.565-10.564 10.565z"></path></svg>
-      </a>
+      {/* FULL GALLERY MODAL (BROWSE ALL 30-80+ PHOTOS OF A TIER) */}
+      <AnimatePresence>
+        {activeModalTier && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6"
+          >
+            {/* Modal Header */}
+            <div className="bg-[#FAF7F2] rounded-2xl p-4 sm:p-6 shadow-xl flex items-center justify-between mb-4 border border-[#E6DDD2]">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="bg-[#B38743] text-white text-xs font-bold px-2.5 py-0.5 rounded-full">
+                    {activeModalTier.priceFormatted}
+                  </span>
+                  <span className="text-xs text-[#7A6D60] font-medium">
+                    {t('modalGallerySubtitle', { count: activeModalTier.totalImages })}
+                  </span>
+                </div>
+                <h3 className="font-playfair text-xl sm:text-2xl font-bold text-[#261E18]">
+                  {t('modalGalleryTitle', { tier: activeModalTier.priceFormatted })}
+                </h3>
+              </div>
+
+              <button
+                onClick={() => setActiveModalTier(null)}
+                className="w-10 h-10 rounded-full bg-white hover:bg-[#EAE0D3] text-[#261E18] flex items-center justify-center transition-colors shadow-xs border border-[#DDD0C2]"
+                aria-label="Fermer la galerie"
+              >
+                <Icon icon="solar:close-circle-linear" className="text-2xl" />
+              </button>
+            </div>
+
+            {/* Scrollable Grid of All Images in this Tier */}
+            <div className="flex-grow overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+                {activeModalTier.images.map((imgSrc, idx) => {
+                  const refCode = `${activeModalTier.id.toUpperCase()}-${String(idx + 1).padStart(2, '0')}`;
+                  return (
+                    <div
+                      key={idx}
+                      className="group bg-white rounded-xl overflow-hidden border border-[#E6DDD2] shadow-xs hover:shadow-lg transition-all flex flex-col"
+                    >
+                      <div
+                        onClick={() =>
+                          setActiveLightbox({
+                            tierTitle: t(activeModalTier.titleKey),
+                            tierPrice: activeModalTier.priceFormatted,
+                            tierId: activeModalTier.id,
+                            image: imgSrc,
+                            index: idx,
+                            total: activeModalTier.images.length,
+                            allImages: activeModalTier.images
+                          })
+                        }
+                        className="aspect-square bg-[#F5ECE1] relative overflow-hidden cursor-pointer"
+                      >
+                        <img
+                          src={imgSrc}
+                          alt={`Gâteau #${refCode}`}
+                          loading="lazy"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <span className="absolute bottom-1.5 left-1.5 bg-black/60 backdrop-blur-xs text-white text-[9px] font-semibold px-1.5 py-0.5 rounded">
+                          #{refCode}
+                        </span>
+                      </div>
+                      <div className="p-2">
+                        <a
+                          href={getCakeOrderLink(activeModalTier, idx)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="w-full inline-flex items-center justify-center gap-1 bg-[#FAF7F2] hover:bg-[#261E18] text-[#261E18] hover:text-white py-1.5 rounded-lg text-[11px] font-medium transition-colors border border-[#E0D5C7]"
+                        >
+                          <Icon icon="solar:chat-round-dots-linear" className="text-xs text-emerald-500" />
+                          <span>Commander</span>
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="pt-3 text-center text-xs text-[#EAE0D3]">
+              <span>Cliquez sur n'importe quel modèle pour l'agrandir ou le commander sur WhatsApp.</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* LIGHTBOX SINGLE-IMAGE FULL-VIEW MODAL */}
+      <AnimatePresence>
+        {activeLightbox && (() => {
+          const tier = CAKE_TIERS.find((t) => t.id === activeLightbox.tierId);
+          const refCode = `#${activeLightbox.tierId.toUpperCase()}-${String(activeLightbox.index + 1).padStart(2, '0')}`;
+          const portionsKey = `portion${activeLightbox.tierId}`;
+
+          return (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+            >
+              <div className="relative max-w-4xl w-full bg-[#FAF7F2] rounded-3xl overflow-hidden shadow-2xl border border-[#DFCBB5] my-auto">
+                {/* Lightbox Header Bar */}
+                <div className="px-5 py-3.5 flex items-center justify-between border-b border-[#EAE0D3] bg-white">
+                  <div className="flex items-center gap-2.5">
+                    <span className="bg-[#B38743] text-white text-xs font-bold px-3 py-1 rounded-full shadow-xs">
+                      {activeLightbox.tierPrice}
+                    </span>
+                    <span className="text-xs sm:text-sm text-[#261E18] font-semibold">
+                      {refCode}
+                    </span>
+                    <span className="text-xs text-[#8C7D70] hidden sm:inline">
+                      ({activeLightbox.index + 1} / {activeLightbox.total})
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setActiveLightbox(null)}
+                    className="w-9 h-9 rounded-full bg-[#FAF7F2] hover:bg-[#EAE0D3] text-[#261E18] flex items-center justify-center transition-colors border border-[#DDD0C2]"
+                    aria-label="Fermer"
+                  >
+                    <Icon icon="solar:close-circle-linear" className="text-xl" />
+                  </button>
+                </div>
+
+                {/* 2-Column Showcase Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-12 items-stretch">
+                  {/* Left Column: Image with Next/Prev Controls */}
+                  <div className="md:col-span-7 bg-[#1A1410] relative flex items-center justify-center min-h-[340px] sm:min-h-[420px] md:min-h-[480px] p-4 overflow-hidden select-none">
+                    <img
+                      src={activeLightbox.image}
+                      alt={`Gâteau ${activeLightbox.tierPrice} - ${refCode}`}
+                      className="max-h-[62vh] w-auto max-w-full object-contain rounded-xl shadow-lg transition-transform duration-300"
+                    />
+
+                    {/* Prev Arrow */}
+                    {activeLightbox.allImages && activeLightbox.allImages.length > 1 && (
+                      <button
+                        onClick={() => handleLightboxNav('prev')}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all shadow-md active:scale-90"
+                        aria-label="Précédent"
+                      >
+                        <Icon icon="solar:alt-arrow-left-linear" className="text-2xl" />
+                      </button>
+                    )}
+
+                    {/* Next Arrow */}
+                    {activeLightbox.allImages && activeLightbox.allImages.length > 1 && (
+                      <button
+                        onClick={() => handleLightboxNav('next')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all shadow-md active:scale-90"
+                        aria-label="Suivant"
+                      >
+                        <Icon icon="solar:alt-arrow-right-linear" className="text-2xl" />
+                      </button>
+                    )}
+
+                    {/* Counter pill at bottom on mobile */}
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-xs text-white text-[11px] px-3 py-1 rounded-full font-medium sm:hidden">
+                      {activeLightbox.index + 1} / {activeLightbox.total}
+                    </div>
+                  </div>
+
+                  {/* Right Column: Descriptions & Details Panel */}
+                  <div className="md:col-span-5 p-6 sm:p-7 flex flex-col justify-between bg-white border-t md:border-t-0 md:border-l border-[#EAE0D3]">
+                    <div className="space-y-4">
+                      {/* Category & Title */}
+                      <div>
+                        <span className="text-[11px] font-semibold text-[#B38743] uppercase tracking-wider block mb-1">
+                          {tier ? t(tier.titleKey) : activeLightbox.tierTitle}
+                        </span>
+                        <h4 className="font-playfair text-2xl font-bold text-[#261E18]">
+                          {activeLightbox.tierPrice}
+                        </h4>
+                        <p className="text-xs text-[#7A6D60] mt-1.5 leading-relaxed font-light">
+                          {tier ? t(tier.descKey) : 'Gâteau de célébration artisanal confectionné sur commande avec des ingrédients frais de premier choix.'}
+                        </p>
+                      </div>
+
+                      {/* Specs / Features List */}
+                      <div className="pt-3 border-t border-[#F0EBE1] space-y-3">
+                        <div className="flex items-start gap-2.5 text-xs">
+                          <div className="w-6 h-6 rounded-lg bg-[#FAF7F2] text-[#B38743] flex items-center justify-center shrink-0 mt-0.5">
+                            <Icon icon="solar:users-group-rounded-linear" className="text-sm" />
+                          </div>
+                          <div>
+                            <span className="font-semibold text-[#261E18] block">{t('suggestedPortions')}</span>
+                            <span className="text-[#7A6D60]">{t(portionsKey)}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-2.5 text-xs">
+                          <div className="w-6 h-6 rounded-lg bg-[#FAF7F2] text-[#B38743] flex items-center justify-center shrink-0 mt-0.5">
+                            <Icon icon="solar:clock-circle-linear" className="text-sm" />
+                          </div>
+                          <div>
+                            <span className="font-semibold text-[#261E18] block">{t('leadTime')}</span>
+                            <span className="text-[#7A6D60]">{t('leadTimeValue')}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-2.5 text-xs">
+                          <div className="w-6 h-6 rounded-lg bg-[#FAF7F2] text-[#B38743] flex items-center justify-center shrink-0 mt-0.5">
+                            <Icon icon="solar:cupcake-linear" className="text-sm" />
+                          </div>
+                          <div>
+                            <span className="font-semibold text-[#261E18] block">{t('flavorsAvailable')}</span>
+                            <span className="text-[#7A6D60]">{t('flavorsList')}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-2.5 text-xs">
+                          <div className="w-6 h-6 rounded-lg bg-[#FAF7F2] text-[#B38743] flex items-center justify-center shrink-0 mt-0.5">
+                            <Icon icon="solar:magic-stick-3-linear" className="text-sm" />
+                          </div>
+                          <div>
+                            <span className="font-semibold text-[#261E18] block">{t('customizationIncluded')}</span>
+                            <span className="text-[#7A6D60]">{t('customizationValue')}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-2.5 text-xs">
+                          <div className="w-6 h-6 rounded-lg bg-[#FAF7F2] text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                            <Icon icon="solar:delivery-linear" className="text-sm" />
+                          </div>
+                          <div>
+                            <span className="font-semibold text-[#261E18] block">{t('deliveryInfo')}</span>
+                            <span className="text-[#7A6D60]">{t('deliveryValue')}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom CTA Block */}
+                    <div className="pt-5 mt-5 border-t border-[#F0EBE1] space-y-2.5">
+                      <a
+                        href={`https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(
+                          `Bonjour Sweetmeats ! 👋\nJe souhaite commander ce modèle de gâteau :\n• Gamme : ${activeLightbox.tierPrice}\n• Référence : ${refCode}\nPouvez-vous me confirmer les disponibilités ? Merci !`
+                        )}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-full inline-flex items-center justify-center gap-2 bg-[#261E18] hover:bg-[#3D3228] text-white text-xs sm:text-sm font-semibold py-3.5 px-5 rounded-2xl transition-all shadow-md hover:shadow-lg active:scale-98"
+                      >
+                        <Icon icon="solar:chat-round-dots-linear" className="text-lg text-emerald-400" />
+                        <span>{t('orderThisModelWhatsapp')}</span>
+                      </a>
+                      <p className="text-[11px] text-center text-[#8C7D70]">
+                        ⚡ {t('whatsappFastResponse')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
     </div>
   );
 }

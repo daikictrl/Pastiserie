@@ -38,6 +38,18 @@ export default function App() {
   const [quoteBudget, setQuoteBudget] = useState('15 000 - 25 000 FCFA');
   const [quoteFlavor, setQuoteFlavor] = useState('');
 
+  // Lock body scroll when mobile drawer, lightbox, or gallery modal is open
+  useEffect(() => {
+    if (isMobileMenuOpen || activeLightbox || activeModalTier) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen, activeLightbox, activeModalTier]);
+
   // Testimonials Data dynamically derived from defaultTestimonials
   // (Directly reflects names and edits made in src/components/ui/testimonial.tsx)
   const testimonialsData = useMemo(() => {
@@ -268,104 +280,144 @@ export default function App() {
         </nav>
       </header>
 
-      {/* Mobile Drawer Menu (Fixed overlay visible anywhere on the page) */}
+      {/* Mobile Drawer Menu (Right slide-over sheet with backdrop) */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-50 bg-[#FAF7F2] flex flex-col justify-between p-6 overflow-y-auto lg:hidden"
-          >
-            {/* Mobile Menu Top Bar */}
-            <div className="flex items-center justify-between pb-5 border-b border-[#E6DDD2]">
-              <div className="flex items-center gap-3">
-                <img
-                  src="/Logo.jpeg"
-                  alt="Sweetmeats Logo"
-                  className="h-10 w-10 object-cover rounded-full border border-[#D9C8B5]"
-                />
-                <div>
-                  <span className="font-playfair text-xl font-bold tracking-tight text-[#261E18] block leading-none">
-                    SWEETMEATS
-                  </span>
-                  <span className="text-[10px] uppercase tracking-widest text-[#B38743] font-medium block mt-1">
-                    Pâtisserie Fine & Traiteur
-                  </span>
+          <>
+            {/* Backdrop overlay */}
+            <motion.div
+              key="mobile-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs lg:hidden"
+              aria-hidden="true"
+            />
+
+            {/* Slide-over Side Drawer from the right */}
+            <motion.div
+              key="mobile-drawer"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+              className="fixed top-0 right-0 bottom-0 z-50 w-[300px] sm:w-[340px] max-w-[85vw] h-full bg-[#FAF7F2] shadow-2xl flex flex-col justify-between p-6 border-l border-[#E6DDD2] overflow-y-auto lg:hidden"
+            >
+              {/* Mobile Drawer Top Bar */}
+              <div className="flex items-center justify-between pb-5 border-b border-[#E6DDD2]">
+                <div className="flex items-center gap-3">
+                  <img
+                    src="/Logo.jpeg"
+                    alt="Sweetmeats Logo"
+                    className="h-10 w-10 object-cover rounded-full border border-[#D9C8B5]"
+                  />
+                  <div>
+                    <span className="font-playfair text-xl font-bold tracking-tight text-[#261E18] block leading-none">
+                      SWEETMEATS
+                    </span>
+                    <span className="text-[10px] uppercase tracking-widest text-[#B38743] font-medium block mt-1">
+                      Pâtisserie Fine & Traiteur
+                    </span>
+                  </div>
                 </div>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-9 h-9 rounded-full bg-white text-[#261E18] hover:bg-[#F2ECE4] border border-[#E6DDD2] flex items-center justify-center shadow-xs transition-colors"
+                  aria-label="Fermer le menu"
+                >
+                  <Icon icon="solar:close-circle-linear" className="text-2xl" />
+                </button>
               </div>
-              <button
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="w-10 h-10 rounded-full bg-white text-[#261E18] border border-[#E6DDD2] flex items-center justify-center shadow-xs"
-                aria-label="Fermer le menu"
-              >
-                <Icon icon="solar:close-circle-linear" className="text-2xl" />
-              </button>
-            </div>
 
-            {/* Navigation Links */}
-            <div className="flex flex-col space-y-4 py-8 text-center my-auto">
-              <a
-                href="#cakes"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-xl font-medium text-[#261E18] py-2 hover:text-[#B38743] transition-colors"
-              >
-                {t('Cakes')}
-              </a>
-              <a
-                href="#pastries"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-xl font-medium text-[#261E18] py-2 hover:text-[#B38743] transition-colors"
-              >
-                {t('Pastries')}
-              </a>
-              <a
-                href="#savory"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-xl font-medium text-[#261E18] py-2 hover:text-[#B38743] transition-colors"
-              >
-                {t('Savory')}
-              </a>
-              <a
-                href="#custom"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-xl font-medium text-[#261E18] py-2 hover:text-[#B38743] transition-colors"
-              >
-                {t('CustomOrders')}
-              </a>
-              <a
-                href="#about"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-xl font-medium text-[#261E18] py-2 hover:text-[#B38743] transition-colors"
-              >
-                {t('About')}
-              </a>
-            </div>
+              {/* Navigation Links */}
+              <div className="flex flex-col space-y-1.5 py-6 my-auto">
+                <a
+                  href="#cakes"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-between text-base font-medium text-[#261E18] px-3.5 py-3 rounded-xl hover:bg-white hover:text-[#B38743] transition-all"
+                >
+                  <span className="flex items-center gap-3">
+                    <Icon icon="solar:cake-bold-duotone" className="text-xl text-[#B38743]" />
+                    <span>{t('Cakes')}</span>
+                  </span>
+                  <Icon icon="solar:alt-arrow-right-linear" className="text-[#C4B5A5] text-sm" />
+                </a>
+                <a
+                  href="#pastries"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-between text-base font-medium text-[#261E18] px-3.5 py-3 rounded-xl hover:bg-white hover:text-[#B38743] transition-all"
+                >
+                  <span className="flex items-center gap-3">
+                    <Icon icon="solar:cupcake-bold-duotone" className="text-xl text-[#B38743]" />
+                    <span>{t('Pastries')}</span>
+                  </span>
+                  <Icon icon="solar:alt-arrow-right-linear" className="text-[#C4B5A5] text-sm" />
+                </a>
+                <a
+                  href="#savory"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-between text-base font-medium text-[#261E18] px-3.5 py-3 rounded-xl hover:bg-white hover:text-[#B38743] transition-all"
+                >
+                  <span className="flex items-center gap-3">
+                    <Icon icon="solar:chef-hat-heart-bold-duotone" className="text-xl text-[#B38743]" />
+                    <span>{t('Savory')}</span>
+                  </span>
+                  <Icon icon="solar:alt-arrow-right-linear" className="text-[#C4B5A5] text-sm" />
+                </a>
+                <a
+                  href="#custom"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-between text-base font-medium text-[#261E18] px-3.5 py-3 rounded-xl hover:bg-white hover:text-[#B38743] transition-all"
+                >
+                  <span className="flex items-center gap-3">
+                    <Icon icon="solar:magic-stick-3-bold-duotone" className="text-xl text-[#B38743]" />
+                    <span>{t('CustomOrders')}</span>
+                  </span>
+                  <Icon icon="solar:alt-arrow-right-linear" className="text-[#C4B5A5] text-sm" />
+                </a>
+                <a
+                  href="#about"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-between text-base font-medium text-[#261E18] px-3.5 py-3 rounded-xl hover:bg-white hover:text-[#B38743] transition-all"
+                >
+                  <span className="flex items-center gap-3">
+                    <Icon icon="solar:shop-2-bold-duotone" className="text-xl text-[#B38743]" />
+                    <span>{t('About')}</span>
+                  </span>
+                  <Icon icon="solar:alt-arrow-right-linear" className="text-[#C4B5A5] text-sm" />
+                </a>
+              </div>
 
-            {/* Bottom Actions: WhatsApp & TikTok */}
-            <div className="pt-6 border-t border-[#E6DDD2] flex flex-col gap-3">
-              <a
-                href={`https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent('Bonjour Sweetmeats, je souhaite passer une commande !')}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-[#261E18] hover:bg-[#3D3228] text-white py-3.5 rounded-full text-sm font-medium shadow-md"
-              >
-                <Icon icon="solar:chat-round-dots-linear" className="text-emerald-400 text-lg" />
-                <span>Commander sur WhatsApp</span>
-              </a>
+              {/* Bottom Actions: WhatsApp & TikTok */}
+              <div className="pt-5 border-t border-[#E6DDD2] flex flex-col gap-3">
+                <a
+                  href={`https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent('Bonjour Sweetmeats, je souhaite passer une commande !')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 bg-[#261E18] hover:bg-[#3D3228] text-white py-3.5 rounded-xl text-sm font-medium shadow-md transition-all active:scale-98"
+                >
+                  <Icon icon="solar:chat-round-dots-linear" className="text-emerald-400 text-lg" />
+                  <span>Commander sur WhatsApp</span>
+                </a>
 
-              <a
-                href="https://www.tiktok.com/@imelda.gaelle.maa"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-black hover:bg-stone-900 text-white py-3 rounded-full text-sm font-medium border border-stone-800"
-              >
-                <Icon icon="ic:baseline-tiktok" className="text-lg text-[#EE1D52]" />
-                <span>TikTok: @Sweetmeats</span>
-              </a>
-            </div>
-          </motion.div>
+                <a
+                  href="https://www.tiktok.com/@imelda.gaelle.maa"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 bg-black hover:bg-stone-900 text-white py-3 rounded-xl text-sm font-medium border border-stone-800 transition-all active:scale-98"
+                >
+                  <Icon icon="ic:baseline-tiktok" className="text-lg text-[#EE1D52]" />
+                  <span>TikTok: @Sweetmeats</span>
+                </a>
+
+                <p className="text-center text-[11px] text-[#8C7E72] mt-1">
+                  Yaoundé, Cameroun • +237 99 30 67 23
+                </p>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

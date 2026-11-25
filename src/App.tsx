@@ -144,7 +144,7 @@ export default function App() {
                 rel="noreferrer"
                 className="text-white hover:text-[#EE1D52] transition-colors flex items-center gap-1.5"
               >
-                <span>🎵 TikTok : @imelda.gaelle.maa</span>
+                <span>🎵 TikTok : @Sweetmeats</span>
               </a>
               <span className="text-[#B38743]">•</span>
               <span className="text-amber-200">✨ Service traiteur apéritif salé & sucré</span>
@@ -170,7 +170,7 @@ export default function App() {
                 rel="noreferrer"
                 className="text-white hover:text-[#EE1D52] transition-colors flex items-center gap-1.5"
               >
-                <span>🎵 TikTok : @imelda.gaelle.maa</span>
+                <span>🎵 TikTok : @Sweetmeats</span>
               </a>
               <span className="text-[#B38743]">•</span>
               <span className="text-amber-200">✨ Service traiteur apéritif salé & sucré</span>
@@ -330,7 +330,7 @@ export default function App() {
                 className="inline-flex items-center justify-center gap-2 bg-black hover:bg-stone-900 text-white py-2.5 rounded-full text-sm font-medium border border-stone-800"
               >
                 <Icon icon="ic:baseline-tiktok" className="text-lg text-[#EE1D52]" />
-                <span>TikTok: @imelda.gaelle.maa</span>
+                <span>TikTok: @Sweetmeats</span>
               </a>
             </div>
           </motion.div>
@@ -1050,7 +1050,7 @@ export default function App() {
                   className="inline-flex items-center gap-2 bg-stone-900 hover:bg-black text-white text-xs font-semibold px-4 py-2.5 rounded-full transition-colors border border-stone-700 w-fit"
                 >
                   <Icon icon="ic:baseline-tiktok" className="text-base text-[#EE1D52]" />
-                  <span>TikTok: @imelda.gaelle.maa</span>
+                  <span>TikTok: @Sweetmeats</span>
                 </a>
               </div>
             </div>
@@ -1125,7 +1125,7 @@ export default function App() {
                     rel="noreferrer"
                     className="hover:text-white transition-colors"
                   >
-                    TikTok: @imelda.gaelle.maa
+                    TikTok: @Sweetmeats
                   </a>
                 </li>
                 <li className="flex items-center gap-2">

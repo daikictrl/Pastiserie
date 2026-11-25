@@ -9,7 +9,7 @@ import CountUp from 'react-countup';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { CAKE_TIERS, SWEET_PASTRIES, SAVORY_CATERING, type CakeTier, type ProductItem } from './data/products';
-import { AnimatedTestimonials } from './components/ui/testimonial';
+import { AnimatedTestimonials, defaultTestimonials } from './components/ui/testimonial';
 
 export default function App() {
   const { t, i18n } = useTranslation();
@@ -38,43 +38,15 @@ export default function App() {
   const [quoteBudget, setQuoteBudget] = useState('15 000 - 25 000 FCFA');
   const [quoteFlavor, setQuoteFlavor] = useState('');
 
-  // Testimonials Data for 3D Animated Showcase
-  const testimonialsData = useMemo(() => [
-    {
-      quote: t('Review 1 Text'),
-      name: "Sarah A.",
-      designation: i18n.language.startsWith('fr') ? "Gâteau d'Anniversaire — Douala" : "Birthday Cake Order",
-      src: "/testimonials/WhatsApp Image 2026-11-25 at 3.57.38 PM.jpeg",
-    },
-    {
-      quote: t('Review 2 Text'),
-      name: "Rohan K.",
-      designation: i18n.language.startsWith('fr') ? "Plateau Traiteur Événement — Yaoundé" : "Catering Cocktail Platter",
-      src: "/testimonials/WhatsApp Image 2026-11-25 at 4.08.40 PM.jpeg",
-    },
-    {
-      quote: t('Review 3 Text'),
-      name: "Priya M.",
-      designation: i18n.language.startsWith('fr') ? "Cliente Régulière — Douala" : "Regular Customer",
-      src: "/testimonials/WhatsApp Image 2026-11-25 at 4.16.51 PM.jpeg",
-    },
-    {
-      quote: i18n.language.startsWith('fr')
-        ? "Pour notre mariage, le gâteau à étages était grandiose et la pièce montée a émerveillé tous nos invités. Les saveurs praliné et vanille étaient divines."
-        : "For our wedding, the tiered centerpiece cake was majestic and our guests were in awe. The praline and vanilla were sheer perfection.",
-      name: "Marcelle & Steve",
-      designation: i18n.language.startsWith('fr') ? "Gâteau de Mariage & Cérémonie" : "Wedding Tiered Cake",
-      src: "/testimonials/WhatsApp Image 2026-11-25 at 4.16.52 PM (1).jpeg",
-    },
-    {
-      quote: i18n.language.startsWith('fr')
-        ? "Les nems faits maison et les samoussas dorés sont les meilleurs de la ville. Toujours croustillants, chauds et livrés avec le sourire."
-        : "The homemade crispy spring rolls and golden samosas are simply the best in town. Always hot, crispy, and delivered on time.",
-      name: "Jean-Paul N.",
-      designation: i18n.language.startsWith('fr') ? "Cocktail d'Entreprise" : "Corporate Cocktail Event",
-      src: "/testimonials/WhatsApp Image 2026-11-25 at 4.16.52 PM.jpeg",
-    }
-  ], [t, i18n.language]);
+  // Testimonials Data dynamically derived from defaultTestimonials
+  // (Directly reflects names and edits made in src/components/ui/testimonial.tsx)
+  const testimonialsData = useMemo(() => {
+    return defaultTestimonials.map((item, idx) => ({
+      ...item,
+      // If translations are desired for standard review keys, use them; otherwise preserve the item's quote
+      quote: idx === 0 ? t('Review 1 Text') : idx === 1 ? t('Review 2 Text') : idx === 2 ? t('Review 3 Text') : item.quote,
+    }));
+  }, [t]);
 
   const toggleLanguage = () => {
     const nextLang = i18n.language.startsWith('fr') ? 'en' : 'fr';
@@ -166,6 +138,15 @@ export default function App() {
               <span className="text-[#B38743]">•</span>
               <span className="text-stone-300">🎂 Gâteaux d'anniversaire & cérémonies sur commande</span>
               <span className="text-[#B38743]">•</span>
+              <a
+                href="https://www.tiktok.com/@imelda.gaelle.maa"
+                target="_blank"
+                rel="noreferrer"
+                className="text-white hover:text-[#EE1D52] transition-colors flex items-center gap-1.5"
+              >
+                <span>🎵 TikTok : @imelda.gaelle.maa</span>
+              </a>
+              <span className="text-[#B38743]">•</span>
               <span className="text-amber-200">✨ Service traiteur apéritif salé & sucré</span>
               <span className="text-[#B38743]">•</span>
               <span className="text-stone-300">💬 Commandes rapides au +237 99 30 67 23</span>
@@ -182,6 +163,15 @@ export default function App() {
               <span className="text-[#E8D5C4]">{t('Budget Friendly Desc')}</span>
               <span className="text-[#B38743]">•</span>
               <span className="text-stone-300">🎂 Gâteaux d'anniversaire & cérémonies sur commande</span>
+              <span className="text-[#B38743]">•</span>
+              <a
+                href="https://www.tiktok.com/@imelda.gaelle.maa"
+                target="_blank"
+                rel="noreferrer"
+                className="text-white hover:text-[#EE1D52] transition-colors flex items-center gap-1.5"
+              >
+                <span>🎵 TikTok : @imelda.gaelle.maa</span>
+              </a>
               <span className="text-[#B38743]">•</span>
               <span className="text-amber-200">✨ Service traiteur apéritif salé & sucré</span>
               <span className="text-[#B38743]">•</span>
@@ -242,6 +232,17 @@ export default function App() {
                   <Icon icon="solar:global-linear" className="text-base text-[#B38743]" />
                   <span className="uppercase font-semibold">{i18n.language.startsWith('fr') ? 'FR' : 'EN'}</span>
                 </button>
+
+                <a
+                  href="https://www.tiktok.com/@imelda.gaelle.maa"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-black hover:text-white border border-[#E6DDD2] text-[#261E18] text-xs font-medium transition-all shadow-xs group"
+                  title="TikTok: @imelda.gaelle.maa"
+                >
+                  <Icon icon="ic:baseline-tiktok" className="text-base text-[#EE1D52] group-hover:text-white transition-colors" />
+                  <span>TikTok</span>
+                </a>
 
                 <a
                   href={`https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent('Bonjour Sweetmeats, je viens de votre site et je souhaite passer une commande !')}`}
@@ -320,6 +321,16 @@ export default function App() {
               >
                 <Icon icon="solar:chat-round-dots-linear" className="text-emerald-400 text-lg" />
                 <span>Commander sur WhatsApp</span>
+              </a>
+
+              <a
+                href="https://www.tiktok.com/@imelda.gaelle.maa"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2 bg-black hover:bg-stone-900 text-white py-2.5 rounded-full text-sm font-medium border border-stone-800"
+              >
+                <Icon icon="ic:baseline-tiktok" className="text-lg text-[#EE1D52]" />
+                <span>TikTok: @imelda.gaelle.maa</span>
               </a>
             </div>
           </motion.div>
@@ -1022,15 +1033,26 @@ export default function App() {
               <p className="text-xs text-[#A8988B] leading-relaxed mb-6">
                 {t('Footer Description')}
               </p>
-              <a
-                href={`https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent('Bonjour Sweetmeats !')}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 bg-[#B38743] hover:bg-[#9B7336] text-white text-xs font-semibold px-4 py-2.5 rounded-full transition-colors"
-              >
-                <Icon icon="solar:chat-round-dots-linear" className="text-base" />
-                <span>{t('Contact via WhatsApp')}</span>
-              </a>
+              <div className="flex flex-col gap-2.5">
+                <a
+                  href={`https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent('Bonjour Sweetmeats !')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 bg-[#B38743] hover:bg-[#9B7336] text-white text-xs font-semibold px-4 py-2.5 rounded-full transition-colors w-fit"
+                >
+                  <Icon icon="solar:chat-round-dots-linear" className="text-base" />
+                  <span>{t('Contact via WhatsApp')}</span>
+                </a>
+                <a
+                  href="https://www.tiktok.com/@imelda.gaelle.maa"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 bg-stone-900 hover:bg-black text-white text-xs font-semibold px-4 py-2.5 rounded-full transition-colors border border-stone-700 w-fit"
+                >
+                  <Icon icon="ic:baseline-tiktok" className="text-base text-[#EE1D52]" />
+                  <span>TikTok: @imelda.gaelle.maa</span>
+                </a>
+              </div>
             </div>
 
             {/* Quick Links */}
@@ -1094,6 +1116,17 @@ export default function App() {
                 <li className="flex items-center gap-2">
                   <Icon icon="solar:clock-circle-linear" className="text-base text-[#B38743]" />
                   <span>{t('Mon - Sun')}</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Icon icon="ic:baseline-tiktok" className="text-base text-[#EE1D52]" />
+                  <a
+                    href="https://www.tiktok.com/@imelda.gaelle.maa"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-white transition-colors"
+                  >
+                    TikTok: @imelda.gaelle.maa
+                  </a>
                 </li>
                 <li className="flex items-center gap-2">
                   <Icon icon="solar:map-point-linear" className="text-base text-[#B38743]" />

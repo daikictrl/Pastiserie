@@ -238,7 +238,7 @@ export default function App() {
                   target="_blank"
                   rel="noreferrer"
                   className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-black hover:text-white border border-[#E6DDD2] text-[#261E18] text-xs font-medium transition-all shadow-xs group"
-                  title="TikTok: @imelda.gaelle.maa"
+                  title="TikTok: @Sweetmeats"
                 >
                   <Icon icon="ic:baseline-tiktok" className="text-base text-[#EE1D52] group-hover:text-white transition-colors" />
                   <span>TikTok</span>
@@ -268,56 +268,88 @@ export default function App() {
         </nav>
       </header>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer Menu (Fixed overlay visible anywhere on the page) */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-[#FAF7F2] border-b border-[#E6DDD2] px-6 py-6 overflow-hidden z-30"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-50 bg-[#FAF7F2] flex flex-col justify-between p-6 overflow-y-auto lg:hidden"
           >
-            <div className="flex flex-col space-y-4 text-center">
+            {/* Mobile Menu Top Bar */}
+            <div className="flex items-center justify-between pb-5 border-b border-[#E6DDD2]">
+              <div className="flex items-center gap-3">
+                <img
+                  src="/Logo.jpeg"
+                  alt="Sweetmeats Logo"
+                  className="h-10 w-10 object-cover rounded-full border border-[#D9C8B5]"
+                />
+                <div>
+                  <span className="font-playfair text-xl font-bold tracking-tight text-[#261E18] block leading-none">
+                    SWEETMEATS
+                  </span>
+                  <span className="text-[10px] uppercase tracking-widest text-[#B38743] font-medium block mt-1">
+                    Pâtisserie Fine & Traiteur
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-10 h-10 rounded-full bg-white text-[#261E18] border border-[#E6DDD2] flex items-center justify-center shadow-xs"
+                aria-label="Fermer le menu"
+              >
+                <Icon icon="solar:close-circle-linear" className="text-2xl" />
+              </button>
+            </div>
+
+            {/* Navigation Links */}
+            <div className="flex flex-col space-y-4 py-8 text-center my-auto">
               <a
                 href="#cakes"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="text-base font-medium text-[#261E18] py-2 hover:text-[#B38743]"
+                className="text-xl font-medium text-[#261E18] py-2 hover:text-[#B38743] transition-colors"
               >
                 {t('Cakes')}
               </a>
               <a
                 href="#pastries"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="text-base font-medium text-[#261E18] py-2 hover:text-[#B38743]"
+                className="text-xl font-medium text-[#261E18] py-2 hover:text-[#B38743] transition-colors"
               >
                 {t('Pastries')}
               </a>
               <a
                 href="#savory"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="text-base font-medium text-[#261E18] py-2 hover:text-[#B38743]"
+                className="text-xl font-medium text-[#261E18] py-2 hover:text-[#B38743] transition-colors"
               >
                 {t('Savory')}
               </a>
               <a
                 href="#custom"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="text-base font-medium text-[#261E18] py-2 hover:text-[#B38743]"
+                className="text-xl font-medium text-[#261E18] py-2 hover:text-[#B38743] transition-colors"
               >
                 {t('CustomOrders')}
               </a>
               <a
                 href="#about"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="text-base font-medium text-[#261E18] py-2 hover:text-[#B38743]"
+                className="text-xl font-medium text-[#261E18] py-2 hover:text-[#B38743] transition-colors"
               >
                 {t('About')}
               </a>
+            </div>
+
+            {/* Bottom Actions: WhatsApp & TikTok */}
+            <div className="pt-6 border-t border-[#E6DDD2] flex flex-col gap-3">
               <a
                 href={`https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent('Bonjour Sweetmeats, je souhaite passer une commande !')}`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-[#261E18] text-white py-3 rounded-full text-sm font-medium mt-3"
+                className="inline-flex items-center justify-center gap-2 bg-[#261E18] hover:bg-[#3D3228] text-white py-3.5 rounded-full text-sm font-medium shadow-md"
               >
                 <Icon icon="solar:chat-round-dots-linear" className="text-emerald-400 text-lg" />
                 <span>Commander sur WhatsApp</span>
@@ -327,7 +359,7 @@ export default function App() {
                 href="https://www.tiktok.com/@imelda.gaelle.maa"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-black hover:bg-stone-900 text-white py-2.5 rounded-full text-sm font-medium border border-stone-800"
+                className="inline-flex items-center justify-center gap-2 bg-black hover:bg-stone-900 text-white py-3 rounded-full text-sm font-medium border border-stone-800"
               >
                 <Icon icon="ic:baseline-tiktok" className="text-lg text-[#EE1D52]" />
                 <span>TikTok: @Sweetmeats</span>

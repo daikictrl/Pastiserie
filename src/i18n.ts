@@ -71,7 +71,7 @@ const resources = {
       "customizationIncluded": "Personnalisation",
       "customizationValue": "Thème, prénom, âge, toppers & couleurs modifiables",
       "deliveryInfo": "Livraison & Retrait",
-      "deliveryValue": "Livraison à domicile (Douala / Yaoundé) ou atelier",
+      "deliveryValue": "Livraison à domicile à Yaoundé ou retrait en atelier",
       "whatsappFastResponse": "Confirmation immédiate sur WhatsApp",
       "portion10k": "~6 à 8 parts",
       "portion12k": "~8 à 10 parts",
@@ -151,7 +151,7 @@ const resources = {
       "Quick Links": "Accès Rapide",
       "Contact Info": "Informations & Commandes",
       "Mon - Sun": "Lundi - Dimanche : 8h00 - 20h30",
-      "Location": "Douala / Yaoundé, Cameroun",
+      "Location": "Yaoundé, Cameroun",
       "All rights reserved": "© 2026 Sweetmeats. Tous droits réservés.",
       "Language": "English"
     }
@@ -224,7 +224,7 @@ const resources = {
       "customizationIncluded": "Customization",
       "customizationValue": "Theme, name, age, toppers & colors customizable",
       "deliveryInfo": "Delivery & Pickup",
-      "deliveryValue": "Home delivery (Douala / Yaounde) or studio pickup",
+      "deliveryValue": "Home delivery across Yaounde or studio pickup",
       "whatsappFastResponse": "Fast confirmation via WhatsApp",
       "portion10k": "~6 to 8 servings",
       "portion12k": "~8 to 10 servings",
@@ -304,7 +304,7 @@ const resources = {
       "Quick Links": "Quick Links",
       "Contact Info": "Contact & Orders",
       "Mon - Sun": "Mon - Sun: 8:00 AM - 8:30 PM",
-      "Location": "Douala / Yaounde, Cameroon",
+      "Location": "Yaounde, Cameroon",
       "All rights reserved": "© 2026 Sweetmeats. All rights reserved.",
       "Language": "Français"
     }

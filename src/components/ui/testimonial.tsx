@@ -15,7 +15,7 @@ export const defaultTestimonials: Testimonial[] = [
     quote:
       "Le gâteau d'anniversaire commandé pour ma fille était magnifique et tellement moelleux ! Tout le monde a demandé le contact. Bravo Sweetmeats !",
     name: "Ambomo Joseph",
-    designation: "Gâteau d'Anniversaire — Douala",
+    designation: "Gâteau d'Anniversaire — Yaoundé",
     src: "/testimonials/WhatsApp Image 2026-11-25 at 3.57.38 PM.jpeg",
   },
   {
@@ -29,14 +29,14 @@ export const defaultTestimonials: Testimonial[] = [
     quote:
       "Commande ultra simple sur WhatsApp, respect scrupuleux du modèle choisi et livraison ponctuelle. Vous avez gagné des clients fidèles pour tous nos événements.",
     name: "Mme. Shouki",
-    designation: "Cliente Régulière — Douala",
+    designation: "Cliente Régulière — Yaoundé",
     src: "/testimonials/WhatsApp Image 2026-11-25 at 4.16.51 PM.jpeg",
   },
   {
     quote:
       "Pour notre mariage, le gâteau à étages était grandiose et la pièce montée a émerveillé tous nos invités. Les saveurs praliné et vanille étaient divines.",
     name: "Mme. Marcelle",
-    designation: "Gâteau de Mariage — Douala",
+    designation: "Gâteau de Mariage — Yaoundé",
     src: "/testimonials/WhatsApp Image 2026-11-25 at 4.16.52 PM (1).jpeg",
   },
   {
